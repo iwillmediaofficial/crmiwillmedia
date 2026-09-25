@@ -1,11 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { createClient } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { Profile } from '@/types/database.types'
 import { useAuth } from '@/features/auth/AuthContext'
-
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 export interface StaffFormPayload {
   email: string
@@ -36,28 +32,19 @@ export function useStaff() {
     enabled: isAdmin,
   })
 
-  // Create staff user mutation
+  // Create staff user mutation via admin_create_staff RPC (bypasses GoTrue email rate limits)
   const createStaff = useMutation({
     mutationFn: async (payload: StaffFormPayload) => {
       if (!payload.password) throw new Error('Password is required for creating a staff login')
-      
-      // Use an isolated temporary client so admin's current browser session is preserved
-      const tempClient = createClient(supabaseUrl, supabaseAnonKey, {
-        auth: { persistSession: false, autoRefreshToken: false },
-      })
 
-      const { data, error } = await tempClient.auth.signUp({
-        email: payload.email.trim(),
-        password: payload.password,
-        options: {
-          data: {
-            full_name: payload.full_name.trim(),
-            role: payload.role,
-            department: payload.department,
-            designation: payload.designation,
-            phone: payload.phone,
-          },
-        },
+      const { data, error } = await supabase.rpc('admin_create_staff', {
+        p_email: payload.email.trim(),
+        p_password: payload.password,
+        p_full_name: payload.full_name.trim(),
+        p_role: payload.role || 'staff',
+        p_department: payload.department || null,
+        p_designation: payload.designation || null,
+        p_phone: payload.phone || null,
       })
 
       if (error) throw error
