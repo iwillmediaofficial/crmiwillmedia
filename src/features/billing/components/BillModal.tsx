@@ -26,7 +26,8 @@ type BillFormValues = z.infer<typeof billSchema>
 interface BillModalProps {
   isOpen: boolean
   onClose: () => void
-  initialBill?: BillingRecord | null
+  initialBill?: Partial<BillingRecord> | null
+  initialDueDate?: string
   onSubmit: (values: Partial<BillingRecord>) => Promise<any>
 }
 
@@ -34,9 +35,10 @@ export const BillModal: React.FC<BillModalProps> = ({
   isOpen,
   onClose,
   initialBill,
+  initialDueDate,
   onSubmit,
 }) => {
-  const isEditing = !!initialBill
+  const isEditing = !!(initialBill && initialBill.id)
 
   // Active clients
   const { data: clients } = useQuery({
@@ -81,7 +83,7 @@ export const BillModal: React.FC<BillModalProps> = ({
       description: '',
       amount: 0,
       currency: 'INR',
-      due_date: '',
+      due_date: initialDueDate || new Date().toISOString().split('T')[0],
       assigned_staff_id: null,
       status: 'pending',
       remarks: '',
@@ -89,32 +91,32 @@ export const BillModal: React.FC<BillModalProps> = ({
   })
 
   useEffect(() => {
-    if (initialBill) {
+    if (initialBill && initialBill.id) {
       reset({
-        client_id: initialBill.client_id,
-        bill_title: initialBill.bill_title,
+        client_id: initialBill.client_id || '',
+        bill_title: initialBill.bill_title || '',
         description: initialBill.description || '',
-        amount: Number(initialBill.amount),
-        currency: initialBill.currency,
-        due_date: initialBill.due_date,
-        assigned_staff_id: initialBill.assigned_staff_id,
-        status: initialBill.status,
+        amount: Number(initialBill.amount) || 0,
+        currency: initialBill.currency || 'INR',
+        due_date: initialBill.due_date || initialDueDate || '',
+        assigned_staff_id: initialBill.assigned_staff_id || null,
+        status: initialBill.status || 'pending',
         remarks: initialBill.remarks || '',
       })
     } else {
       reset({
-        client_id: '',
-        bill_title: '',
-        description: '',
-        amount: 0,
-        currency: 'INR',
-        due_date: new Date().toISOString().split('T')[0],
-        assigned_staff_id: null,
+        client_id: initialBill?.client_id || '',
+        bill_title: initialBill?.bill_title || '',
+        description: initialBill?.description || '',
+        amount: Number(initialBill?.amount) || 0,
+        currency: initialBill?.currency || 'INR',
+        due_date: initialDueDate || initialBill?.due_date || new Date().toISOString().split('T')[0],
+        assigned_staff_id: initialBill?.assigned_staff_id || null,
         status: 'pending',
         remarks: '',
       })
     }
-  }, [initialBill, reset, isOpen])
+  }, [initialBill, initialDueDate, reset, isOpen])
 
   const handleFormSubmit = async (values: BillFormValues) => {
     await onSubmit({

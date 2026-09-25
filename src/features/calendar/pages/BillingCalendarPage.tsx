@@ -6,17 +6,22 @@ import {
   Calendar as CalendarIcon,
   LayoutGrid,
   List,
+  Plus,
 } from 'lucide-react'
 import { useBillingCalendar } from '../hooks/useBillingCalendar'
 import { CalendarBillDetailModal } from '../components/CalendarBillDetailModal'
+import { BillModal } from '@/features/billing/components/BillModal'
 import { useBilling } from '@/features/billing/hooks/useBilling'
+import { useAuth } from '@/features/auth/AuthContext'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { format, isSameMonth, isToday } from 'date-fns'
 import { formatCurrency, formatDate } from '@/lib/formatters'
+import { BillingRecord } from '@/types/database.types'
 
 export const BillingCalendarPage: React.FC = () => {
+  const { isAdmin } = useAuth()
   const {
     currentDate,
     monthStart,
@@ -29,9 +34,11 @@ export const BillingCalendarPage: React.FC = () => {
     goToToday,
   } = useBillingCalendar()
 
-  const { markPaid } = useBilling()
+  const { markPaid, createBill } = useBilling()
   const [selectedBill, setSelectedBill] = useState<any | null>(null)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
+  const [isAddBillModalOpen, setIsAddBillModalOpen] = useState(false)
+  const [targetDueDate, setTargetDueDate] = useState<string>('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
   const handleChipClick = (bill: any) => {
@@ -41,6 +48,17 @@ export const BillingCalendarPage: React.FC = () => {
 
   const handleMarkPaid = async (bill: any) => {
     await markPaid({ id: bill.id })
+  }
+
+  const handleOpenAddBill = (date?: string) => {
+    const initialDate = date || format(isSameMonth(currentDate, new Date()) ? new Date() : monthStart, 'yyyy-MM-dd')
+    setTargetDueDate(initialDate)
+    setIsAddBillModalOpen(true)
+  }
+
+  const handleCreateBillSubmit = async (values: Partial<BillingRecord>) => {
+    await createBill(values)
+    setIsAddBillModalOpen(false)
   }
 
   const weekDayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
@@ -112,6 +130,17 @@ export const BillingCalendarPage: React.FC = () => {
           <Button variant="outline" size="sm" onClick={goToToday} className="shadow-sm">
             Today
           </Button>
+
+          {isAdmin && (
+            <Button
+              size="sm"
+              onClick={() => handleOpenAddBill()}
+              className="shadow-sm flex items-center gap-1.5 bg-brand-600 hover:bg-brand-700 text-white"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Add Bill</span>
+            </Button>
+          )}
         </div>
       </div>
 
@@ -138,7 +167,7 @@ export const BillingCalendarPage: React.FC = () => {
               return (
                 <div
                   key={dateKey}
-                  className={`min-h-[105px] p-2 bg-white flex flex-col justify-between transition-colors ${
+                  className={`min-h-[110px] p-2 bg-white flex flex-col justify-between transition-colors group relative ${
                     !inMonth ? 'bg-slate-50/60 opacity-40' : 'hover:bg-slate-50/50'
                   }`}
                 >
@@ -153,15 +182,30 @@ export const BillingCalendarPage: React.FC = () => {
                       {format(day, 'd')}
                     </span>
 
-                    {dayBills.length > 0 && (
-                      <span className="text-[10px] text-slate-400 font-medium">
-                        {dayBills.length} {dayBills.length === 1 ? 'bill' : 'bills'}
-                      </span>
-                    )}
+                    <div className="flex items-center gap-1">
+                      {dayBills.length > 0 && (
+                        <span className="text-[10px] text-slate-400 font-medium">
+                          {dayBills.length} {dayBills.length === 1 ? 'bill' : 'bills'}
+                        </span>
+                      )}
+                      {isAdmin && inMonth && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleOpenAddBill(dateKey)
+                          }}
+                          className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-slate-400 hover:text-brand-600 hover:bg-brand-50 transition-all cursor-pointer"
+                          title={`Add bill due on ${format(day, 'MMM d, yyyy')}`}
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   {/* Bill Chips */}
-                  <div className="space-y-1 overflow-y-auto max-h-[85px]">
+                  <div className="space-y-1 overflow-y-auto max-h-[85px] flex-1">
                     {dayBills.map((bill) => {
                       const isPaid = bill.status === 'paid'
                       const isOverdue = bill.displayStatus === 'overdue'
@@ -189,6 +233,18 @@ export const BillingCalendarPage: React.FC = () => {
                       )
                     })}
                   </div>
+
+                  {/* Quick Add affordance on empty day cell */}
+                  {isAdmin && inMonth && dayBills.length === 0 && (
+                    <button
+                      type="button"
+                      onClick={() => handleOpenAddBill(dateKey)}
+                      className="opacity-0 group-hover:opacity-100 mt-1 py-1 px-1.5 rounded text-[10px] font-medium text-slate-400 hover:text-brand-600 hover:bg-brand-50/70 transition-all text-left flex items-center gap-1 cursor-pointer"
+                    >
+                      <Plus className="w-3 h-3" />
+                      <span>Add Bill</span>
+                    </button>
+                  )}
                 </div>
               )
             })}
@@ -197,9 +253,26 @@ export const BillingCalendarPage: React.FC = () => {
       ) : (
         // MONTHLY LIST VIEW
         <Card>
+          {isAdmin && (
+            <div className="flex items-center justify-between p-3.5 border-b border-slate-100 bg-slate-50/50">
+              <span className="text-xs font-semibold text-slate-700">
+                Scheduled Invoices ({monthBills.length})
+              </span>
+              <Button size="sm" onClick={() => handleOpenAddBill()} className="flex items-center gap-1 text-xs">
+                <Plus className="w-3.5 h-3.5" />
+                <span>Add Bill</span>
+              </Button>
+            </div>
+          )}
           {monthBills.length === 0 ? (
-            <div className="p-16 text-center text-xs text-slate-400">
-              No bills scheduled for {format(currentDate, 'MMMM yyyy')}.
+            <div className="p-16 text-center text-xs text-slate-400 space-y-3">
+              <p>No bills scheduled for {format(currentDate, 'MMMM yyyy')}.</p>
+              {isAdmin && (
+                <Button size="sm" onClick={() => handleOpenAddBill()} className="mx-auto flex items-center gap-1.5">
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Create First Bill</span>
+                </Button>
+              )}
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -275,6 +348,14 @@ export const BillingCalendarPage: React.FC = () => {
           setSelectedBill(null)
         }}
         onMarkPaid={handleMarkPaid}
+      />
+
+      {/* Direct Add Bill Modal */}
+      <BillModal
+        isOpen={isAddBillModalOpen}
+        onClose={() => setIsAddBillModalOpen(false)}
+        initialDueDate={targetDueDate}
+        onSubmit={handleCreateBillSubmit}
       />
     </div>
   )

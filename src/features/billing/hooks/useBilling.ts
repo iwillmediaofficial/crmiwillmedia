@@ -18,6 +18,14 @@ export function useBilling(filters: BillingFilterParams = {}) {
   const { data: bills, isLoading, error } = useQuery({
     queryKey: ['billing-records', filters, user?.id],
     queryFn: async () => {
+      // Auto-ensure recurring retainers have their bills generated for current month
+      try {
+        const currentMonth = new Date().toISOString().slice(0, 7) + '-01'
+        await supabase.rpc('generate_billing_occurrences', { p_due_month: currentMonth })
+      } catch {
+        // Non-blocking for staff
+      }
+
       let query = supabase
         .from('billing_records')
         .select(`
@@ -180,6 +188,9 @@ export function useBilling(filters: BillingFilterParams = {}) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['recurring-bills'] })
+      queryClient.invalidateQueries({ queryKey: ['billing-records'] })
+      queryClient.invalidateQueries({ queryKey: ['calendar-bills'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] })
     },
   })
 
@@ -197,6 +208,9 @@ export function useBilling(filters: BillingFilterParams = {}) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['recurring-bills'] })
+      queryClient.invalidateQueries({ queryKey: ['billing-records'] })
+      queryClient.invalidateQueries({ queryKey: ['calendar-bills'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] })
     },
   })
 
@@ -210,8 +224,10 @@ export function useBilling(filters: BillingFilterParams = {}) {
       return data
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['billing-records'] })
       queryClient.invalidateQueries({ queryKey: ['calendar-bills'] })
       queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] })
+      queryClient.invalidateQueries({ queryKey: ['recurring-bills'] })
     },
   })
 

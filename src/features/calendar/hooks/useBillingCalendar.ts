@@ -28,6 +28,13 @@ export function useBillingCalendar() {
   const { data: monthBills, isLoading } = useQuery({
     queryKey: ['calendar-bills', startDateStr, endDateStr],
     queryFn: async () => {
+      // Auto-ensure recurring retainers have their bills generated for this month
+      try {
+        await supabase.rpc('generate_billing_occurrences', { p_due_month: startDateStr })
+      } catch {
+        // Non-blocking for staff
+      }
+
       // Query billing records due this month
       const { data: records, error } = await supabase
         .from('billing_records')
