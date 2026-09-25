@@ -39,11 +39,11 @@ BEGIN
     RAISE EXCEPTION 'A user with email % already exists', v_clean_email;
   END IF;
 
-  -- 3. Hash password and generate user id
+  -- 3. Hash password with standard 10-round bcrypt and generate user id
   v_user_id := gen_random_uuid();
-  v_hashed_password := extensions.crypt(p_password, extensions.gen_salt('bf'));
+  v_hashed_password := extensions.crypt(p_password, extensions.gen_salt('bf', 10));
 
-  -- 4. Insert into auth.users (Confirmed immediately so no confirmation email is triggered)
+  -- 4. Insert into auth.users with empty string tokens (GoTrue Go struct requires non-NULL string tokens)
   INSERT INTO auth.users (
     instance_id,
     id,
@@ -52,8 +52,18 @@ BEGIN
     email,
     encrypted_password,
     email_confirmed_at,
+    confirmation_token,
+    recovery_token,
+    email_change_token_new,
+    email_change,
+    phone_change,
+    phone_change_token,
+    email_change_token_current,
+    reauthentication_token,
     raw_app_meta_data,
     raw_user_meta_data,
+    is_sso_user,
+    is_anonymous,
     created_at,
     updated_at
   ) VALUES (
@@ -64,15 +74,28 @@ BEGIN
     v_clean_email,
     v_hashed_password,
     NOW(),
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
     '{"provider":"email","providers":["email"]}'::jsonb,
     jsonb_build_object(
+      'sub', v_user_id::text,
+      'email', v_clean_email,
       'full_name', p_full_name,
       'role', p_role,
       'department', p_department,
       'designation', p_designation,
       'phone', p_phone,
-      'email_verified', true
+      'email_verified', true,
+      'phone_verified', false
     ),
+    false,
+    false,
     NOW(),
     NOW()
   );
@@ -95,7 +118,11 @@ BEGIN
       'email', v_clean_email,
       'full_name', p_full_name,
       'role', p_role,
-      'email_verified', true
+      'department', p_department,
+      'designation', p_designation,
+      'phone', p_phone,
+      'email_verified', true,
+      'phone_verified', false
     ),
     'email',
     v_user_id::text,
