@@ -1,6 +1,7 @@
 import React from 'react'
-import { Menu, Bell } from 'lucide-react'
+import { Menu } from 'lucide-react'
 import { RunningTimerBar } from '@/features/timer/components/RunningTimerBar'
+import { NotificationDropdown } from '@/features/notifications/components/NotificationDropdown'
 
 interface TopbarProps {
   onOpenMobileMenu: () => void
@@ -29,14 +30,8 @@ export const Topbar: React.FC<TopbarProps> = ({ onOpenMobileMenu }) => {
         {/* Real-time Work Timer Widget */}
         <RunningTimerBar />
 
-        {/* Notifications Icon */}
-        <button
-          className="relative p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors"
-          title="Notifications"
-        >
-          <Bell className="w-4 h-4" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-brand-600 ring-2 ring-white" />
-        </button>
+        {/* Real-time Notifications Bell with Audio Alerts */}
+        <NotificationDropdown />
       </div>
     </header>
   )
