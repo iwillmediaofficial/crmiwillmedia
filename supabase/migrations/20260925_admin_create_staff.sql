@@ -77,7 +77,7 @@ BEGIN
     NOW()
   );
 
-  -- 5. Insert into auth.identities
+  -- 5. Insert into auth.identities (omitting generated column 'email')
   INSERT INTO auth.identities (
     id,
     user_id,
@@ -86,8 +86,7 @@ BEGIN
     provider_id,
     last_sign_in_at,
     created_at,
-    updated_at,
-    email
+    updated_at
   ) VALUES (
     gen_random_uuid(),
     v_user_id,
@@ -102,8 +101,7 @@ BEGIN
     v_user_id::text,
     NOW(),
     NOW(),
-    NOW(),
-    v_clean_email
+    NOW()
   );
 
   -- 6. Upsert into public.profiles
