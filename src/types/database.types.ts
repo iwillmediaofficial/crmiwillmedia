@@ -565,6 +565,9 @@ export type Database = {
           assigned_date: string
           assigned_staff_id: string
           billing_status: string
+          is_billable: boolean
+          billable_amount: number
+          currency: string
           client_id: string
           completed_at: string | null
           created_at: string
@@ -584,6 +587,9 @@ export type Database = {
           assigned_date?: string
           assigned_staff_id: string
           billing_status?: string
+          is_billable?: boolean
+          billable_amount?: number
+          currency?: string
           client_id: string
           completed_at?: string | null
           created_at?: string
@@ -603,6 +609,9 @@ export type Database = {
           assigned_date?: string
           assigned_staff_id?: string
           billing_status?: string
+          is_billable?: boolean
+          billable_amount?: number
+          currency?: string
           client_id?: string
           completed_at?: string | null
           created_at?: string

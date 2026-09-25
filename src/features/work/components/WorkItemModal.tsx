@@ -19,6 +19,9 @@ const workItemSchema = z.object({
   priority: z.string().min(1, 'Priority is required'),
   status: z.string().min(1, 'Status is required'),
   billing_status: z.string().min(1, 'Billing status is required'),
+  is_billable: z.boolean(),
+  billable_amount: z.number().min(0, 'Amount cannot be negative').optional(),
+  currency: z.string().optional(),
   remarks: z.string().optional(),
 })
 
@@ -73,6 +76,7 @@ export const WorkItemModal: React.FC<WorkItemModalProps> = ({
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<WorkItemFormValues>({
     resolver: zodResolver(workItemSchema),
@@ -85,9 +89,14 @@ export const WorkItemModal: React.FC<WorkItemModalProps> = ({
       priority: 'normal',
       status: 'assigned',
       billing_status: 'unbilled',
+      is_billable: false,
+      billable_amount: 0,
+      currency: 'INR',
       remarks: '',
     },
   })
+
+  const isBillable = watch('is_billable')
 
   useEffect(() => {
     if (initialWorkItem) {
@@ -100,6 +109,9 @@ export const WorkItemModal: React.FC<WorkItemModalProps> = ({
         priority: initialWorkItem.priority,
         status: initialWorkItem.status,
         billing_status: initialWorkItem.billing_status,
+        is_billable: initialWorkItem.is_billable ?? false,
+        billable_amount: Number(initialWorkItem.billable_amount) || 0,
+        currency: initialWorkItem.currency || 'INR',
         remarks: initialWorkItem.remarks || '',
       })
     } else {
@@ -112,6 +124,9 @@ export const WorkItemModal: React.FC<WorkItemModalProps> = ({
         priority: 'normal',
         status: 'assigned',
         billing_status: 'unbilled',
+        is_billable: false,
+        billable_amount: 0,
+        currency: 'INR',
         remarks: '',
       })
     }
@@ -120,6 +135,8 @@ export const WorkItemModal: React.FC<WorkItemModalProps> = ({
   const handleFormSubmit = async (values: WorkItemFormValues) => {
     await onSubmit({
       ...values,
+      billable_amount: values.is_billable ? (values.billable_amount || 0) : 0,
+      currency: values.is_billable ? (values.currency || 'INR') : 'INR',
       description: values.description || null,
       remarks: values.remarks || null,
     })
@@ -234,6 +251,52 @@ export const WorkItemModal: React.FC<WorkItemModalProps> = ({
               <option value="completed">Completed</option>
             </select>
           </div>
+        </div>
+
+        {/* Billable Work Options */}
+        <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 space-y-3">
+          <label className="flex items-start gap-3 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              className="w-4 h-4 mt-0.5 rounded text-brand-600 border-slate-300 focus:ring-brand-500 cursor-pointer"
+              {...register('is_billable')}
+            />
+            <div>
+              <span className="text-xs font-bold text-slate-900 block">
+                Billable Work Deliverable
+              </span>
+              <span className="text-[11px] text-slate-500 block leading-relaxed">
+                When marked as completed, an invoice will automatically be transferred to Billing & Client Invoices.
+              </span>
+            </div>
+          </label>
+
+          {isBillable && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-slate-200/80">
+              <Input
+                label="Billable Invoice Amount"
+                type="number"
+                step="0.01"
+                placeholder="e.g. 15000"
+                error={errors.billable_amount?.message}
+                {...register('billable_amount', { valueAsNumber: true })}
+              />
+
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600">
+                  Billing Currency
+                </label>
+                <select
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+                  {...register('currency')}
+                >
+                  <option value="INR">INR (₹)</option>
+                  <option value="AED">AED (د.إ)</option>
+                  <option value="USD">USD ($)</option>
+                </select>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

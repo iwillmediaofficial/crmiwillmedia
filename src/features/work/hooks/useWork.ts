@@ -129,6 +129,8 @@ export function useWork(filters: WorkFilterParams = {}) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['work-items'] })
       queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] })
+      queryClient.invalidateQueries({ queryKey: ['billing-records'] })
+      queryClient.invalidateQueries({ queryKey: ['calendar-bills'] })
     },
   })
 
@@ -151,6 +153,8 @@ export function useWork(filters: WorkFilterParams = {}) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['work-items'] })
       queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] })
+      queryClient.invalidateQueries({ queryKey: ['billing-records'] })
+      queryClient.invalidateQueries({ queryKey: ['calendar-bills'] })
     },
   })
 

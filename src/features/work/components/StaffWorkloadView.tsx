@@ -106,7 +106,7 @@ export const StaffWorkloadView: React.FC<StaffWorkloadViewProps> = ({
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="space-y-1">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-semibold text-slate-900 text-xs sm:text-sm">
                               {item.title}
                             </span>
@@ -123,6 +123,22 @@ export const StaffWorkloadView: React.FC<StaffWorkloadViewProps> = ({
                             >
                               {item.priority}
                             </Badge>
+                            {item.is_billable && (
+                              <span
+                                className={`inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-semibold border ${
+                                  item.billing_status === 'billed'
+                                    ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                    : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                }`}
+                                title={
+                                  item.billable_amount
+                                    ? `Billable: ${item.currency || 'INR'} ${item.billable_amount}`
+                                    : 'Billable'
+                                }
+                              >
+                                {item.billing_status === 'billed' ? 'Billed' : 'Billable'}
+                              </span>
+                            )}
                           </div>
 
                           <div className="flex items-center gap-3 text-[11px] text-slate-500">

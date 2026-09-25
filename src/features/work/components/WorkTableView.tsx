@@ -91,7 +91,25 @@ export const WorkTableView: React.FC<WorkTableViewProps> = ({
                 }`}
               >
                 <td className="py-3.5 px-4 font-semibold text-slate-900">
-                  <div>{item.title}</div>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span>{item.title}</span>
+                    {item.is_billable && (
+                      <span
+                        className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold border ${
+                          item.billing_status === 'billed'
+                            ? 'bg-blue-50 text-blue-700 border-blue-200'
+                            : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        }`}
+                        title={
+                          item.billable_amount
+                            ? `Billable: ${item.currency || 'INR'} ${item.billable_amount}`
+                            : 'Billable Work'
+                        }
+                      >
+                        {item.billing_status === 'billed' ? 'Billed' : 'Billable'}
+                      </span>
+                    )}
+                  </div>
                   {item.description && (
                     <p className="text-[11px] font-normal text-slate-400 line-clamp-1 mt-0.5 max-w-xs">
                       {item.description}
