@@ -12,9 +12,11 @@ import {
   Trash2,
   Building2,
   CheckCircle2,
+  Layers,
 } from 'lucide-react'
 import { useLeads, LeadFilterParams } from '../hooks/useLeads'
 import { LeadModal } from '../components/LeadModal'
+import { LeadFormsManagerModal } from '../components/LeadFormsManagerModal'
 import { WhatsAppButton } from '../components/WhatsAppButton'
 import { useAuth } from '@/features/auth/AuthContext'
 import { Button } from '@/components/ui/Button'
@@ -31,6 +33,7 @@ export const LeadsPage: React.FC = () => {
     followUpFilter: 'all',
   })
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isFormsModalOpen, setIsFormsModalOpen] = useState(false)
   const [editingLead, setEditingLead] = useState<Lead | null>(null)
 
   const {
@@ -97,10 +100,23 @@ export const LeadsPage: React.FC = () => {
           </p>
         </div>
 
-        <Button onClick={handleOpenAdd} className="shadow-sm">
-          <Plus className="w-4 h-4 mr-1.5" />
-          <span>Add Lead</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          {isAdmin && (
+            <Button
+              variant="outline"
+              onClick={() => setIsFormsModalOpen(true)}
+              className="border-slate-300 text-slate-700 hover:bg-slate-50 shadow-xs"
+            >
+              <Layers className="w-4 h-4 mr-1.5 text-[#0866FF]" />
+              <span>Meta Lead Forms</span>
+            </Button>
+          )}
+
+          <Button onClick={handleOpenAdd} className="shadow-sm">
+            <Plus className="w-4 h-4 mr-1.5" />
+            <span>Add Lead</span>
+          </Button>
+        </div>
       </div>
 
       {/* Filter and Search Controls */}
@@ -347,6 +363,14 @@ export const LeadsPage: React.FC = () => {
           }
         }}
       />
+
+      {/* Meta Lead Forms Manager Modal */}
+      {isAdmin && (
+        <LeadFormsManagerModal
+          isOpen={isFormsModalOpen}
+          onClose={() => setIsFormsModalOpen(false)}
+        />
+      )}
     </div>
   )
 }

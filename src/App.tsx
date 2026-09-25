@@ -20,6 +20,7 @@ const BillingPage = lazy(() => import('./features/billing/pages/BillingPage').th
 const BillingCalendarPage = lazy(() => import('./features/calendar/pages/BillingCalendarPage').then(m => ({ default: m.BillingCalendarPage })))
 const StaffPage = lazy(() => import('./features/staff/pages/StaffPage').then(m => ({ default: m.StaffPage })))
 const SettingsPage = lazy(() => import('./features/settings/pages/SettingsPage').then(m => ({ default: m.SettingsPage })))
+const MetaInstantFormPage = lazy(() => import('./features/public-form/pages/MetaInstantFormPage').then(m => ({ default: m.MetaInstantFormPage })))
 
 const PageLoader = () => (
   <div className="h-64 flex flex-col items-center justify-center">
@@ -35,6 +36,10 @@ export function App() {
         <BrowserRouter>
           <Suspense fallback={<PageLoader />}>
             <Routes>
+              {/* Public Standalone Meta Lead Form Routes */}
+              <Route path="/f/:slug" element={<MetaInstantFormPage />} />
+              <Route path="/form/:slug" element={<MetaInstantFormPage />} />
+
               {/* Public Auth Routes */}
               <Route element={<AuthLayout />}>
                 <Route path="/login" element={<LoginPage />} />
