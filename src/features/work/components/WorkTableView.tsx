@@ -215,13 +215,15 @@ export const WorkTableView: React.FC<WorkTableViewProps> = ({
                       </>
                     )}
 
-                    <button
-                      onClick={() => onOpenEdit(item)}
-                      className="p-1.5 text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded-md transition-colors"
-                      title="Edit Work Item"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                    </button>
+                    {isAdmin && (
+                      <button
+                        onClick={() => onOpenEdit(item)}
+                        className="p-1.5 text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded-md transition-colors"
+                        title="Edit Work Item"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
 
                     {isAdmin && (
                       <button

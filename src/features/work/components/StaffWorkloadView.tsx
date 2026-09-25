@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/Badge'
 import { formatCurrency, formatDate, formatTimeSeconds } from '@/lib/formatters'
 import { WorkItem } from '@/types/database.types'
 import { useTimer } from '@/features/timer/hooks/useTimer'
+import { useAuth } from '@/features/auth/AuthContext'
 import { cn } from '@/lib/utils'
 
 interface StaffWorkloadViewProps {
@@ -54,6 +55,7 @@ const StaffCardSection: React.FC<StaffCardProps> = ({
   onResumeWork,
   onMarkCompleted,
 }) => {
+  const { isAdmin } = useAuth()
   const [statusFilter, setStatusFilter] = useState<FilterType>('all')
   const [visibleCount, setVisibleCount] = useState<number>(5)
 
@@ -369,12 +371,14 @@ const StaffCardSection: React.FC<StaffCardProps> = ({
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => onOpenEdit(item)}
-                        className="text-[11px] text-slate-500 hover:text-brand-600 font-medium"
-                      >
-                        Edit
-                      </button>
+                      {isAdmin && (
+                        <button
+                          onClick={() => onOpenEdit(item)}
+                          className="text-[11px] text-slate-500 hover:text-brand-600 font-medium cursor-pointer"
+                        >
+                          Edit
+                        </button>
+                      )}
                       {item.status !== 'completed' && (
                         <button
                           onClick={() => onMarkCompleted(item.id)}

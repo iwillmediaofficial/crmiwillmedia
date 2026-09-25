@@ -49,6 +49,7 @@ export const WorkPage: React.FC = () => {
   }
 
   const handleOpenEdit = (item: WorkItem) => {
+    if (!isAdmin) return
     setEditingItem(item)
     setIsWorkModalOpen(true)
   }
@@ -229,6 +230,7 @@ export const WorkPage: React.FC = () => {
         initialWorkItem={editingItem}
         onSubmit={async (payload) => {
           if (editingItem) {
+            if (!isAdmin) return
             await updateWorkItem({ id: editingItem.id, updates: payload })
           } else {
             await createWorkItem(payload)
