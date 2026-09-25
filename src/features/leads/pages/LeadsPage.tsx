@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 import {
   Users2,
   Plus,
@@ -9,6 +10,8 @@ import {
   Filter,
   Edit2,
   Trash2,
+  Building2,
+  CheckCircle2,
 } from 'lucide-react'
 import { useLeads, LeadFilterParams } from '../hooks/useLeads'
 import { LeadModal } from '../components/LeadModal'
@@ -36,7 +39,9 @@ export const LeadsPage: React.FC = () => {
     createLead,
     updateLead,
     deleteLead,
+    convertLeadToClient,
     isDeleting,
+    isConverting,
   } = useLeads(filters)
 
   const handleOpenAdd = () => {
@@ -47,6 +52,12 @@ export const LeadsPage: React.FC = () => {
   const handleOpenEdit = (lead: Lead) => {
     setEditingLead(lead)
     setIsModalOpen(true)
+  }
+
+  const handleConvertToClient = async (lead: Lead) => {
+    if (confirm(`Convert lead "${lead.name}" to an official Client account in Clients Directory?`)) {
+      await convertLeadToClient({ leadId: lead.id })
+    }
   }
 
   const handleDelete = async (id: string, name: string) => {
@@ -237,7 +248,20 @@ export const LeadsPage: React.FC = () => {
                         )}
                       </td>
 
-                      <td className="py-3.5 px-4">{getStatusBadge(lead.status)}</td>
+                      <td className="py-3.5 px-4">
+                        <div className="space-y-1">
+                          {getStatusBadge(lead.status)}
+                          {lead.status === 'won' && (
+                            <Link
+                              to="/clients"
+                              className="inline-flex items-center gap-1 text-[10px] text-brand-600 hover:text-brand-700 font-semibold hover:underline block"
+                            >
+                              <Building2 className="w-3 h-3" />
+                              <span>In Clients Directory</span>
+                            </Link>
+                          )}
+                        </div>
+                      </td>
 
                       <td className="py-3.5 px-4">
                         {lead.profiles?.full_name ? (
@@ -271,6 +295,17 @@ export const LeadsPage: React.FC = () => {
 
                       <td className="py-3.5 px-4 text-right">
                         <div className="flex items-center justify-end gap-1.5">
+                          {lead.status !== 'won' && (
+                            <button
+                              onClick={() => handleConvertToClient(lead)}
+                              disabled={isConverting}
+                              className="inline-flex items-center gap-1 px-2 py-1 text-[11px] rounded bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-medium transition-colors"
+                              title="Convert to Client"
+                            >
+                              <CheckCircle2 className="w-3 h-3" />
+                              <span>Convert</span>
+                            </button>
+                          )}
                           <button
                             onClick={() => handleOpenEdit(lead)}
                             className="p-1.5 text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded-md transition-colors"

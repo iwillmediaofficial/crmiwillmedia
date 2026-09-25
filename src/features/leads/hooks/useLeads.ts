@@ -78,6 +78,8 @@ export function useLeads(filters: LeadFilterParams = {}) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leads'] })
       queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] })
+      queryClient.invalidateQueries({ queryKey: ['clients'] })
+      queryClient.invalidateQueries({ queryKey: ['active-clients-select'] })
     },
   })
 
@@ -96,6 +98,8 @@ export function useLeads(filters: LeadFilterParams = {}) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leads'] })
       queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] })
+      queryClient.invalidateQueries({ queryKey: ['clients'] })
+      queryClient.invalidateQueries({ queryKey: ['active-clients-select'] })
     },
   })
 
@@ -108,6 +112,27 @@ export function useLeads(filters: LeadFilterParams = {}) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leads'] })
       queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] })
+      queryClient.invalidateQueries({ queryKey: ['clients'] })
+      queryClient.invalidateQueries({ queryKey: ['active-clients-select'] })
+    },
+  })
+
+  // Explicit convert lead to client mutation
+  const convertLeadToClient = useMutation({
+    mutationFn: async ({ leadId, companyName, contactPerson }: { leadId: string; companyName?: string; contactPerson?: string }) => {
+      const { data, error } = await supabase.rpc('convert_lead_to_client', {
+        p_lead_id: leadId,
+        p_company_name: companyName || null,
+        p_contact_person: contactPerson || null,
+      })
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['leads'] })
+      queryClient.invalidateQueries({ queryKey: ['clients'] })
+      queryClient.invalidateQueries({ queryKey: ['active-clients-select'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] })
     },
   })
 
@@ -118,8 +143,10 @@ export function useLeads(filters: LeadFilterParams = {}) {
     createLead: createLead.mutateAsync,
     updateLead: updateLead.mutateAsync,
     deleteLead: deleteLead.mutateAsync,
+    convertLeadToClient: convertLeadToClient.mutateAsync,
     isCreating: createLead.isPending,
     isUpdating: updateLead.isPending,
     isDeleting: deleteLead.isPending,
+    isConverting: convertLeadToClient.isPending,
   }
 }

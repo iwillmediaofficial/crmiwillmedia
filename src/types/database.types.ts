@@ -353,6 +353,7 @@ export type Database = {
           remarks: string | null
           status: string
           updated_at: string
+          converted_client_id: string | null
         }
         Insert: {
           assigned_staff_id?: string | null
@@ -368,6 +369,7 @@ export type Database = {
           remarks?: string | null
           status?: string
           updated_at?: string
+          converted_client_id?: string | null
         }
         Update: {
           assigned_staff_id?: string | null
@@ -383,6 +385,7 @@ export type Database = {
           remarks?: string | null
           status?: string
           updated_at?: string
+          converted_client_id?: string | null
         }
         Relationships: [
           {
