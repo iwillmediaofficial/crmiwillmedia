@@ -11,6 +11,7 @@ import {
 import { useWork, WorkFilterParams } from '../hooks/useWork'
 import { WorkItemModal } from '../components/WorkItemModal'
 import { MarkPendingModal } from '../components/MarkPendingModal'
+import { WorkDetailsModal } from '../components/WorkDetailsModal'
 import { StaffWorkloadView } from '../components/StaffWorkloadView'
 import { WorkTableView } from '../components/WorkTableView'
 import { useAuth } from '@/features/auth/AuthContext'
@@ -28,6 +29,7 @@ export const WorkPage: React.FC = () => {
     dueFilter: 'all',
   })
 
+  const [viewingItem, setViewingItem] = useState<WorkItem | null>(null)
   const [isWorkModalOpen, setIsWorkModalOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<WorkItem | null>(null)
 
@@ -46,6 +48,10 @@ export const WorkPage: React.FC = () => {
   const handleOpenAdd = () => {
     setEditingItem(null)
     setIsWorkModalOpen(true)
+  }
+
+  const handleOpenView = (item: WorkItem) => {
+    setViewingItem(item)
   }
 
   const handleOpenEdit = (item: WorkItem) => {
@@ -205,6 +211,7 @@ export const WorkPage: React.FC = () => {
       ) : viewMode === 'cards' ? (
         <StaffWorkloadView
           workItems={workItems}
+          onOpenView={handleOpenView}
           onOpenEdit={handleOpenEdit}
           onOpenPending={handleOpenPending}
           onResumeWork={handleResumeWork}
@@ -214,6 +221,7 @@ export const WorkPage: React.FC = () => {
         <Card>
           <WorkTableView
             workItems={workItems}
+            onOpenView={handleOpenView}
             onOpenEdit={handleOpenEdit}
             onOpenPending={handleOpenPending}
             onResumeWork={handleResumeWork}
@@ -221,6 +229,15 @@ export const WorkPage: React.FC = () => {
             onDelete={handleDelete}
           />
         </Card>
+      )}
+
+      {/* View Task Details Modal */}
+      {viewingItem && (
+        <WorkDetailsModal
+          isOpen={Boolean(viewingItem)}
+          onClose={() => setViewingItem(null)}
+          workItem={viewingItem}
+        />
       )}
 
       {/* Add / Edit Work Modal */}

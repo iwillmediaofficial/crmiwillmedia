@@ -10,6 +10,7 @@ import {
   RotateCcw,
   Edit2,
   Trash2,
+  Eye,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { formatDate, formatTimeSeconds } from '@/lib/formatters'
@@ -18,6 +19,7 @@ import { useAuth } from '@/features/auth/AuthContext'
 
 interface WorkTableViewProps {
   workItems: any[]
+  onOpenView: (item: any) => void
   onOpenEdit: (item: any) => void
   onOpenPending: (item: any) => void
   onResumeWork: (item: any) => void
@@ -27,6 +29,7 @@ interface WorkTableViewProps {
 
 export const WorkTableView: React.FC<WorkTableViewProps> = ({
   workItems,
+  onOpenView,
   onOpenEdit,
   onOpenPending,
   onResumeWork,
@@ -92,7 +95,14 @@ export const WorkTableView: React.FC<WorkTableViewProps> = ({
               >
                 <td className="py-3.5 px-4 font-semibold text-slate-900">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span>{item.title}</span>
+                    <button
+                      type="button"
+                      onClick={() => onOpenView(item)}
+                      className="font-semibold text-slate-900 hover:text-brand-600 transition-colors text-left cursor-pointer"
+                      title="Click to view task details"
+                    >
+                      {item.title}
+                    </button>
                     {item.is_billable && (
                       <span
                         className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold border ${
@@ -101,9 +111,9 @@ export const WorkTableView: React.FC<WorkTableViewProps> = ({
                             : 'bg-emerald-50 text-emerald-700 border-emerald-200'
                         }`}
                         title={
-                          item.billable_amount
+                          isAdmin && item.billable_amount
                             ? `Billable: ${item.currency || 'INR'} ${item.billable_amount}`
-                            : 'Billable Work'
+                            : 'Billable'
                         }
                       >
                         {item.billing_status === 'billed' ? 'Billed' : 'Billable'}
@@ -214,6 +224,15 @@ export const WorkTableView: React.FC<WorkTableViewProps> = ({
                         </button>
                       </>
                     )}
+
+                    <button
+                      type="button"
+                      onClick={() => onOpenView(item)}
+                      className="p-1.5 text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded-md transition-colors cursor-pointer"
+                      title="View Task Details"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                    </button>
 
                     {isAdmin && (
                       <button

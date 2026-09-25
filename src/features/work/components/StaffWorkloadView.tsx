@@ -9,6 +9,7 @@ import {
   Building2,
   RotateCcw,
   ChevronDown,
+  Eye,
 } from 'lucide-react'
 import { Card, CardHeader, CardContent } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
@@ -20,6 +21,7 @@ import { cn } from '@/lib/utils'
 
 interface StaffWorkloadViewProps {
   workItems: any[]
+  onOpenView: (item: any) => void
   onOpenEdit: (item: any) => void
   onOpenPending: (item: any) => void
   onResumeWork: (item: any) => void
@@ -36,6 +38,7 @@ interface StaffCardProps {
   isStopping: boolean
   startTimer: (workItemId: string) => Promise<any>
   stopTimer: (timerEntryId?: string) => Promise<any>
+  onOpenView: (item: any) => void
   onOpenEdit: (item: any) => void
   onOpenPending: (item: any) => void
   onResumeWork: (item: any) => void
@@ -50,6 +53,7 @@ const StaffCardSection: React.FC<StaffCardProps> = ({
   isStopping,
   startTimer,
   stopTimer,
+  onOpenView,
   onOpenEdit,
   onOpenPending,
   onResumeWork,
@@ -245,9 +249,14 @@ const StaffCardSection: React.FC<StaffCardProps> = ({
                   <div className="flex items-start justify-between gap-2">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-semibold text-slate-900 text-xs sm:text-sm">
+                        <button
+                          type="button"
+                          onClick={() => onOpenView(item)}
+                          className="font-semibold text-slate-900 text-xs sm:text-sm hover:text-brand-600 transition-colors text-left cursor-pointer"
+                          title="Click to view task details"
+                        >
                           {item.title}
-                        </span>
+                        </button>
                         <Badge
                           variant={
                             item.priority === 'urgent'
@@ -269,7 +278,7 @@ const StaffCardSection: React.FC<StaffCardProps> = ({
                                 : 'bg-emerald-50 text-emerald-700 border-emerald-200'
                             }`}
                             title={
-                              item.billable_amount
+                              isAdmin && item.billable_amount
                                 ? `Billable: ${item.currency || 'INR'} ${item.billable_amount}`
                                 : 'Billable'
                             }
@@ -371,8 +380,19 @@ const StaffCardSection: React.FC<StaffCardProps> = ({
                     </div>
 
                     <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => onOpenView(item)}
+                        className="inline-flex items-center gap-1 text-[11px] text-slate-500 hover:text-brand-600 font-medium cursor-pointer"
+                        title="View Task Details"
+                      >
+                        <Eye className="w-3 h-3" />
+                        <span>View Task</span>
+                      </button>
+
                       {isAdmin && (
                         <button
+                          type="button"
                           onClick={() => onOpenEdit(item)}
                           className="text-[11px] text-slate-500 hover:text-brand-600 font-medium cursor-pointer"
                         >
@@ -381,8 +401,9 @@ const StaffCardSection: React.FC<StaffCardProps> = ({
                       )}
                       {item.status !== 'completed' && (
                         <button
+                          type="button"
                           onClick={() => onMarkCompleted(item.id)}
-                          className="inline-flex items-center gap-1 text-[11px] text-emerald-600 hover:text-emerald-700 font-semibold"
+                          className="inline-flex items-center gap-1 text-[11px] text-emerald-600 hover:text-emerald-700 font-semibold cursor-pointer"
                         >
                           <CheckCircle2 className="w-3 h-3" />
                           <span>Complete</span>
@@ -420,6 +441,7 @@ const StaffCardSection: React.FC<StaffCardProps> = ({
 
 export const StaffWorkloadView: React.FC<StaffWorkloadViewProps> = ({
   workItems,
+  onOpenView,
   onOpenEdit,
   onOpenPending,
   onResumeWork,
@@ -454,6 +476,7 @@ export const StaffWorkloadView: React.FC<StaffWorkloadViewProps> = ({
           isStopping={isStopping}
           startTimer={startTimer}
           stopTimer={stopTimer}
+          onOpenView={onOpenView}
           onOpenEdit={onOpenEdit}
           onOpenPending={onOpenPending}
           onResumeWork={onResumeWork}
