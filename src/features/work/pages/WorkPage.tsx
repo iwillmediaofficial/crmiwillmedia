@@ -77,6 +77,7 @@ export const WorkPage: React.FC = () => {
   }
 
   const handleDelete = async (id: string, title: string) => {
+    if (!isAdmin) return
     if (confirm(`Are you sure you want to delete task "${title}"?`)) {
       await deleteWorkItem(id)
     }
@@ -216,6 +217,7 @@ export const WorkPage: React.FC = () => {
           onOpenPending={handleOpenPending}
           onResumeWork={handleResumeWork}
           onMarkCompleted={markCompleted}
+          onDelete={isAdmin ? handleDelete : undefined}
         />
       ) : (
         <Card>
@@ -226,7 +228,7 @@ export const WorkPage: React.FC = () => {
             onOpenPending={handleOpenPending}
             onResumeWork={handleResumeWork}
             onMarkCompleted={markCompleted}
-            onDelete={handleDelete}
+            onDelete={isAdmin ? handleDelete : undefined}
           />
         </Card>
       )}
@@ -237,6 +239,7 @@ export const WorkPage: React.FC = () => {
           isOpen={Boolean(viewingItem)}
           onClose={() => setViewingItem(null)}
           workItem={viewingItem}
+          onDelete={isAdmin ? handleDelete : undefined}
         />
       )}
 
@@ -253,6 +256,7 @@ export const WorkPage: React.FC = () => {
             await createWorkItem(payload)
           }
         }}
+        onDelete={isAdmin ? handleDelete : undefined}
       />
 
       {/* Mark Pending Modal */}

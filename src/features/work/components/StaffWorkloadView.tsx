@@ -10,6 +10,7 @@ import {
   RotateCcw,
   ChevronDown,
   Eye,
+  Trash2,
 } from 'lucide-react'
 import { Card, CardHeader, CardContent } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
@@ -26,6 +27,7 @@ interface StaffWorkloadViewProps {
   onOpenPending: (item: any) => void
   onResumeWork: (item: any) => void
   onMarkCompleted: (id: string) => void
+  onDelete?: (id: string, title: string) => void
 }
 
 type FilterType = 'all' | 'active' | 'ongoing' | 'pending' | 'done'
@@ -43,6 +45,7 @@ interface StaffCardProps {
   onOpenPending: (item: any) => void
   onResumeWork: (item: any) => void
   onMarkCompleted: (id: string) => void
+  onDelete?: (id: string, title: string) => void
 }
 
 const StaffCardSection: React.FC<StaffCardProps> = ({
@@ -58,6 +61,7 @@ const StaffCardSection: React.FC<StaffCardProps> = ({
   onOpenPending,
   onResumeWork,
   onMarkCompleted,
+  onDelete,
 }) => {
   const { isAdmin } = useAuth()
   const [statusFilter, setStatusFilter] = useState<FilterType>('all')
@@ -399,6 +403,16 @@ const StaffCardSection: React.FC<StaffCardProps> = ({
                           Edit
                         </button>
                       )}
+                      {isAdmin && onDelete && (
+                        <button
+                          type="button"
+                          onClick={() => onDelete(item.id, item.title)}
+                          className="text-[11px] text-slate-400 hover:text-rose-600 font-medium cursor-pointer transition-colors"
+                          title="Delete Work Item"
+                        >
+                          Delete
+                        </button>
+                      )}
                       {item.status !== 'completed' && (
                         <button
                           type="button"
@@ -446,6 +460,7 @@ export const StaffWorkloadView: React.FC<StaffWorkloadViewProps> = ({
   onOpenPending,
   onResumeWork,
   onMarkCompleted,
+  onDelete,
 }) => {
   const { activeTimer, startTimer, stopTimer, isStarting, isStopping } = useTimer()
 
@@ -481,6 +496,7 @@ export const StaffWorkloadView: React.FC<StaffWorkloadViewProps> = ({
           onOpenPending={onOpenPending}
           onResumeWork={onResumeWork}
           onMarkCompleted={onMarkCompleted}
+          onDelete={onDelete}
         />
       ))}
     </div>

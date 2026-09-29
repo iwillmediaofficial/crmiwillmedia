@@ -11,6 +11,7 @@ import {
   DollarSign,
   Briefcase,
   AlertTriangle,
+  Trash2,
 } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 import { Badge } from '@/components/ui/Badge'
@@ -22,12 +23,14 @@ interface WorkDetailsModalProps {
   isOpen: boolean
   onClose: () => void
   workItem: any
+  onDelete?: (id: string, title: string) => void
 }
 
 export const WorkDetailsModal: React.FC<WorkDetailsModalProps> = ({
   isOpen,
   onClose,
   workItem,
+  onDelete,
 }) => {
   const { isAdmin } = useAuth()
 
@@ -245,7 +248,24 @@ export const WorkDetailsModal: React.FC<WorkDetailsModalProps> = ({
         )}
 
         {/* Modal Footer */}
-        <div className="pt-2 border-t border-slate-100 flex justify-end">
+        <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+          <div>
+            {isAdmin && onDelete && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose()
+                  onDelete(workItem.id, workItem.title)
+                }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold transition-colors cursor-pointer"
+                title="Delete Work Item"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Delete Work Item</span>
+              </button>
+            )}
+          </div>
+
           <button
             type="button"
             onClick={onClose}

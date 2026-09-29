@@ -24,7 +24,7 @@ interface WorkTableViewProps {
   onOpenPending: (item: any) => void
   onResumeWork: (item: any) => void
   onMarkCompleted: (id: string) => void
-  onDelete: (id: string, title: string) => void
+  onDelete?: (id: string, title: string) => void
 }
 
 export const WorkTableView: React.FC<WorkTableViewProps> = ({
@@ -244,7 +244,7 @@ export const WorkTableView: React.FC<WorkTableViewProps> = ({
                       </button>
                     )}
 
-                    {isAdmin && (
+                    {isAdmin && onDelete && (
                       <button
                         onClick={() => onDelete(item.id, item.title)}
                         className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors"

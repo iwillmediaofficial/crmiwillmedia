@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { WorkItem } from '@/types/database.types'
 import { useAuth } from '@/features/auth/AuthContext'
+import { Trash2 } from 'lucide-react'
 
 const workItemSchema = z.object({
   title: z.string().min(1, 'Work title is required'),
@@ -32,6 +33,7 @@ interface WorkItemModalProps {
   onClose: () => void
   initialWorkItem?: WorkItem | null
   onSubmit: (values: Partial<WorkItem>) => Promise<any>
+  onDelete?: (id: string, title: string) => void
 }
 
 export const WorkItemModal: React.FC<WorkItemModalProps> = ({
@@ -39,6 +41,7 @@ export const WorkItemModal: React.FC<WorkItemModalProps> = ({
   onClose,
   initialWorkItem,
   onSubmit,
+  onDelete,
 }) => {
   const { isAdmin } = useAuth()
 
@@ -321,13 +324,31 @@ export const WorkItemModal: React.FC<WorkItemModalProps> = ({
           />
         </div>
 
-        <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
-          <Button type="button" variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button type="submit" isLoading={isSubmitting}>
-            {initialWorkItem ? 'Save Changes' : 'Assign Work'}
-          </Button>
+        <div className="flex items-center justify-between gap-3 pt-3 border-t border-slate-100">
+          <div>
+            {initialWorkItem && isAdmin && onDelete && (
+              <Button
+                type="button"
+                variant="outline"
+                className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-rose-200"
+                onClick={() => {
+                  onDelete(initialWorkItem.id, initialWorkItem.title)
+                  onClose()
+                }}
+              >
+                <Trash2 className="w-4 h-4 mr-1.5" />
+                Delete Work
+              </Button>
+            )}
+          </div>
+          <div className="flex items-center gap-3">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" isLoading={isSubmitting}>
+              {initialWorkItem ? 'Save Changes' : 'Assign Work'}
+            </Button>
+          </div>
         </div>
       </form>
     </Modal>
