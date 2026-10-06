@@ -15,6 +15,7 @@ import {
 import { useAuth } from '@/features/auth/AuthContext'
 import { useDashboardData } from '../hooks/useDashboardData'
 import { MetricsCard } from '../components/MetricsCard'
+import { ActiveTeamTimersWidget } from '../components/ActiveTeamTimersWidget'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { formatDate } from '@/lib/formatters'
@@ -148,6 +149,9 @@ export const DashboardPage: React.FC = () => {
           />
         </div>
       )}
+
+      {/* Active Team Sessions Widget (Admin Only) */}
+      {isAdmin && <ActiveTeamTimersWidget />}
 
       {/* Secondary Dashboard Sections */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

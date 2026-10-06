@@ -14,6 +14,8 @@ import { MarkPendingModal } from '../components/MarkPendingModal'
 import { WorkDetailsModal } from '../components/WorkDetailsModal'
 import { StaffWorkloadView } from '../components/StaffWorkloadView'
 import { WorkTableView } from '../components/WorkTableView'
+import { LiveStaffActivityBar } from '../components/LiveStaffActivityBar'
+import { useAdminActiveTimers } from '@/features/timer/hooks/useAdminActiveTimers'
 import { useAuth } from '@/features/auth/AuthContext'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -21,6 +23,7 @@ import { WorkItem } from '@/types/database.types'
 
 export const WorkPage: React.FC = () => {
   const { isAdmin } = useAuth()
+  const { activeTimers, activeTimersByStaffId, activeTimersByWorkItemId } = useAdminActiveTimers()
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards')
   const [filters, setFilters] = useState<WorkFilterParams>({
     search: '',
@@ -133,6 +136,9 @@ export const WorkPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Live Working Staff Activity Bar (Admins) */}
+      {isAdmin && <LiveStaffActivityBar activeTimers={activeTimers} />}
+
       {/* Filter Toolbar */}
       <Card className="p-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -218,6 +224,7 @@ export const WorkPage: React.FC = () => {
           onResumeWork={handleResumeWork}
           onMarkCompleted={markCompleted}
           onDelete={isAdmin ? handleDelete : undefined}
+          activeTimersByStaffId={activeTimersByStaffId}
         />
       ) : (
         <Card>
@@ -229,6 +236,7 @@ export const WorkPage: React.FC = () => {
             onResumeWork={handleResumeWork}
             onMarkCompleted={markCompleted}
             onDelete={isAdmin ? handleDelete : undefined}
+            activeTimersByWorkItemId={activeTimersByWorkItemId}
           />
         </Card>
       )}

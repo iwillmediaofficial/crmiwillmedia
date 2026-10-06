@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/Badge'
 import { formatDate, formatTimeSeconds } from '@/lib/formatters'
 import { useTimer } from '@/features/timer/hooks/useTimer'
 import { useAuth } from '@/features/auth/AuthContext'
+import { StaffActiveTimer } from '@/features/timer/hooks/useAdminActiveTimers'
 
 interface WorkTableViewProps {
   workItems: any[]
@@ -25,6 +26,7 @@ interface WorkTableViewProps {
   onResumeWork: (item: any) => void
   onMarkCompleted: (id: string) => void
   onDelete?: (id: string, title: string) => void
+  activeTimersByWorkItemId?: Record<string, StaffActiveTimer>
 }
 
 export const WorkTableView: React.FC<WorkTableViewProps> = ({
@@ -35,8 +37,9 @@ export const WorkTableView: React.FC<WorkTableViewProps> = ({
   onResumeWork,
   onMarkCompleted,
   onDelete,
+  activeTimersByWorkItemId = {},
 }) => {
-  const { isAdmin } = useAuth()
+  const { isAdmin, user } = useAuth()
   const { activeTimer, startTimer, stopTimer, isStarting, isStopping } = useTimer()
 
   const getPriorityBadge = (priority: string) => {
@@ -82,7 +85,10 @@ export const WorkTableView: React.FC<WorkTableViewProps> = ({
         </thead>
         <tbody className="divide-y divide-slate-100 text-slate-700">
           {workItems.map((item) => {
-            const isItemTimerRunning = activeTimer?.entry?.work_item_id === item.id
+            const itemActiveTimer = activeTimersByWorkItemId?.[item.id]
+            const isItemTimerRunning =
+              !!itemActiveTimer || activeTimer?.entry?.work_item_id === item.id
+            const isMyItem = user?.id === item.assigned_staff_id
             const isOverdue =
               new Date(item.due_date) < new Date() && item.status !== 'completed'
 
@@ -90,7 +96,7 @@ export const WorkTableView: React.FC<WorkTableViewProps> = ({
               <tr
                 key={item.id}
                 className={`hover:bg-slate-50/80 transition-colors ${
-                  isItemTimerRunning ? 'bg-brand-50/20' : ''
+                  isItemTimerRunning ? 'bg-emerald-50/25' : ''
                 }`}
               >
                 <td className="py-3.5 px-4 font-semibold text-slate-900">
@@ -157,7 +163,18 @@ export const WorkTableView: React.FC<WorkTableViewProps> = ({
                 <td className="py-3.5 px-4 font-mono font-medium text-slate-700">
                   <span className="flex items-center gap-1">
                     <Clock className="w-3.5 h-3.5 text-slate-400" />
-                    <span>{formatTimeSeconds(item.totalDurationSeconds || 0)}</span>
+                    {isItemTimerRunning ? (
+                      <span className="text-emerald-700 font-bold flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping inline-block" />
+                        <span>
+                          {formatTimeSeconds(
+                            itemActiveTimer?.elapsedSeconds ?? activeTimer?.elapsedSeconds ?? 0
+                          )}
+                        </span>
+                      </span>
+                    ) : (
+                      <span>{formatTimeSeconds(item.totalDurationSeconds || 0)}</span>
+                    )}
                   </span>
                 </td>
 
@@ -177,25 +194,34 @@ export const WorkTableView: React.FC<WorkTableViewProps> = ({
                     {/* Timer trigger */}
                     {item.status !== 'completed' && (
                       <>
-                        {isItemTimerRunning ? (
-                          <button
-                            onClick={() => stopTimer()}
-                            disabled={isStopping}
-                            className="p-1.5 rounded-md bg-rose-600 hover:bg-rose-700 text-white shadow-sm transition-all"
-                            title="Stop Active Timer"
+                        {isMyItem ? (
+                          isItemTimerRunning ? (
+                            <button
+                              onClick={() => stopTimer()}
+                              disabled={isStopping}
+                              className="p-1.5 rounded-md bg-rose-600 hover:bg-rose-700 text-white shadow-sm transition-all cursor-pointer"
+                              title="Stop Active Timer"
+                            >
+                              <Square className="w-3.5 h-3.5 fill-current" />
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => startTimer(item.id)}
+                              disabled={isStarting}
+                              className="p-1.5 rounded-md bg-brand-600 hover:bg-brand-700 text-white shadow-sm transition-all cursor-pointer"
+                              title="Start Timer"
+                            >
+                              <Play className="w-3.5 h-3.5 fill-current" />
+                            </button>
+                          )
+                        ) : isItemTimerRunning ? (
+                          <span
+                            className="p-1 px-1.5 rounded bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200"
+                            title={`Active Timer: ${formatTimeSeconds(itemActiveTimer?.elapsedSeconds || 0)}`}
                           >
-                            <Square className="w-3.5 h-3.5 fill-current" />
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => startTimer(item.id)}
-                            disabled={isStarting}
-                            className="p-1.5 rounded-md bg-brand-600 hover:bg-brand-700 text-white shadow-sm transition-all"
-                            title="Start Timer"
-                          >
-                            <Play className="w-3.5 h-3.5 fill-current" />
-                          </button>
-                        )}
+                            Active
+                          </span>
+                        ) : null}
 
                         {item.status === 'pending' ? (
                           <button

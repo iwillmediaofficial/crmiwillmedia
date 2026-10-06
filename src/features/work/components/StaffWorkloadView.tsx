@@ -18,6 +18,7 @@ import { formatCurrency, formatDate, formatTimeSeconds } from '@/lib/formatters'
 import { WorkItem } from '@/types/database.types'
 import { useTimer } from '@/features/timer/hooks/useTimer'
 import { useAuth } from '@/features/auth/AuthContext'
+import { StaffActiveTimer } from '@/features/timer/hooks/useAdminActiveTimers'
 import { cn } from '@/lib/utils'
 
 interface StaffWorkloadViewProps {
@@ -28,6 +29,7 @@ interface StaffWorkloadViewProps {
   onResumeWork: (item: any) => void
   onMarkCompleted: (id: string) => void
   onDelete?: (id: string, title: string) => void
+  activeTimersByStaffId?: Record<string, StaffActiveTimer>
 }
 
 type FilterType = 'all' | 'active' | 'ongoing' | 'pending' | 'done'
@@ -36,6 +38,7 @@ interface StaffCardProps {
   staff: any
   items: any[]
   activeTimer: any
+  staffActiveTimer?: StaffActiveTimer | null
   isStarting: boolean
   isStopping: boolean
   startTimer: (workItemId: string) => Promise<any>
@@ -52,6 +55,7 @@ const StaffCardSection: React.FC<StaffCardProps> = ({
   staff,
   items,
   activeTimer,
+  staffActiveTimer,
   isStarting,
   isStopping,
   startTimer,
@@ -63,9 +67,13 @@ const StaffCardSection: React.FC<StaffCardProps> = ({
   onMarkCompleted,
   onDelete,
 }) => {
-  const { isAdmin } = useAuth()
+  const { isAdmin, user } = useAuth()
   const [statusFilter, setStatusFilter] = useState<FilterType>('all')
   const [visibleCount, setVisibleCount] = useState<number>(5)
+
+  // Current active timer for this specific staff member
+  const currentStaffTimer =
+    staffActiveTimer || (activeTimer?.entry?.staff_id === staff.id ? activeTimer : null)
 
   // Status-specific counts
   const assignedCount = items.filter((i) => i.status === 'assigned').length
@@ -92,7 +100,7 @@ const StaffCardSection: React.FC<StaffCardProps> = ({
   }
 
   return (
-    <Card className="flex flex-col justify-between">
+    <Card id={`staff-card-${staff.id || 'unassigned'}`} className="flex flex-col justify-between">
       <CardHeader className="bg-slate-50/50 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         {/* Staff profile summary */}
         <div className="flex items-center gap-3">
@@ -100,7 +108,23 @@ const StaffCardSection: React.FC<StaffCardProps> = ({
             {staff.full_name ? staff.full_name.slice(0, 2).toUpperCase() : 'IW'}
           </div>
           <div>
-            <h3 className="font-semibold text-slate-900 text-sm">{staff.full_name}</h3>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="font-semibold text-slate-900 text-sm">{staff.full_name}</h3>
+              {currentStaffTimer && (
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10px] font-bold shadow-2xs animate-pulse">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                  </span>
+                  <span className="max-w-[120px] sm:max-w-[180px] truncate">
+                    {currentStaffTimer.workItemTitle || 'Working'}
+                  </span>
+                  <span className="font-mono text-emerald-700 font-extrabold">
+                    {formatTimeSeconds(currentStaffTimer.elapsedSeconds)}
+                  </span>
+                </span>
+              )}
+            </div>
             <p className="text-[11px] text-slate-500">{staff.designation || 'Staff Member'}</p>
           </div>
         </div>
@@ -235,7 +259,12 @@ const StaffCardSection: React.FC<StaffCardProps> = ({
         ) : (
           <>
             {displayedItems.map((item) => {
-              const isItemTimerRunning = activeTimer?.entry?.work_item_id === item.id
+              const isItemTimerRunning =
+                currentStaffTimer?.workItemId === item.id ||
+                activeTimer?.entry?.work_item_id === item.id
+
+              const isMyItem = user?.id === staff.id || user?.id === item.assigned_staff_id
+
               const isOverdue =
                 new Date(item.due_date) < new Date() && item.status !== 'completed'
 
@@ -244,7 +273,7 @@ const StaffCardSection: React.FC<StaffCardProps> = ({
                   key={item.id}
                   className={`p-3.5 rounded-xl border transition-all ${
                     isItemTimerRunning
-                      ? 'border-brand-400 bg-brand-50/30 shadow-sm'
+                      ? 'border-emerald-300 bg-emerald-50/25 ring-1 ring-emerald-400/50 shadow-xs'
                       : isOverdue
                       ? 'border-rose-200 bg-rose-50/20'
                       : 'border-slate-200/80 bg-white hover:border-slate-300'
@@ -309,7 +338,20 @@ const StaffCardSection: React.FC<StaffCardProps> = ({
                         <span>•</span>
                         <span className="flex items-center gap-1 font-mono font-medium text-slate-600">
                           <Clock className="w-3 h-3" />
-                          {formatTimeSeconds(item.totalDurationSeconds || 0)}
+                          {isItemTimerRunning ? (
+                            <span className="text-emerald-700 font-bold flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping inline-block" />
+                              <span>
+                                {formatTimeSeconds(
+                                  currentStaffTimer?.workItemId === item.id
+                                    ? currentStaffTimer.elapsedSeconds
+                                    : activeTimer?.elapsedSeconds || 0
+                                )}
+                              </span>
+                            </span>
+                          ) : (
+                            formatTimeSeconds(item.totalDurationSeconds || 0)
+                          )}
                         </span>
                       </div>
                     </div>
@@ -343,30 +385,39 @@ const StaffCardSection: React.FC<StaffCardProps> = ({
                     <div className="flex items-center gap-2">
                       {item.status !== 'completed' && (
                         <>
-                          {isItemTimerRunning ? (
-                            <button
-                              onClick={() => stopTimer()}
-                              disabled={isStopping}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-semibold transition-all active:scale-95 shadow-sm"
-                            >
-                              <Square className="w-3 h-3 fill-current" />
-                              <span>Stop Timer</span>
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => startTimer(item.id)}
-                              disabled={isStarting}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-[11px] font-semibold transition-all active:scale-95 shadow-sm"
-                            >
-                              <Play className="w-3 h-3 fill-current" />
-                              <span>Start Timer</span>
-                            </button>
-                          )}
+                          {isMyItem ? (
+                            isItemTimerRunning ? (
+                              <button
+                                onClick={() => stopTimer()}
+                                disabled={isStopping}
+                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-semibold transition-all active:scale-95 shadow-sm cursor-pointer"
+                              >
+                                <Square className="w-3 h-3 fill-current" />
+                                <span>Stop Timer</span>
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => startTimer(item.id)}
+                                disabled={isStarting}
+                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-[11px] font-semibold transition-all active:scale-95 shadow-sm cursor-pointer"
+                              >
+                                <Play className="w-3 h-3 fill-current" />
+                                <span>Start Timer</span>
+                              </button>
+                            )
+                          ) : isItemTimerRunning ? (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-semibold">
+                              <Play className="w-2.5 h-2.5 fill-current text-emerald-600 animate-pulse" />
+                              <span>
+                                In Session: {formatTimeSeconds(currentStaffTimer?.elapsedSeconds || 0)}
+                              </span>
+                            </span>
+                          ) : null}
 
                           {item.status === 'pending' ? (
                             <button
                               onClick={() => onResumeWork(item)}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-800 text-[11px] font-semibold transition-colors"
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-800 text-[11px] font-semibold transition-colors cursor-pointer"
                             >
                               <RotateCcw className="w-3 h-3" />
                               <span>Resume Work</span>
@@ -374,7 +425,7 @@ const StaffCardSection: React.FC<StaffCardProps> = ({
                           ) : (
                             <button
                               onClick={() => onOpenPending(item)}
-                              className="text-[11px] text-slate-500 hover:text-amber-700 hover:bg-amber-50 px-2 py-1 rounded transition-colors"
+                              className="text-[11px] text-slate-500 hover:text-amber-700 hover:bg-amber-50 px-2 py-1 rounded transition-colors cursor-pointer"
                             >
                               Mark Pending
                             </button>
@@ -461,6 +512,7 @@ export const StaffWorkloadView: React.FC<StaffWorkloadViewProps> = ({
   onResumeWork,
   onMarkCompleted,
   onDelete,
+  activeTimersByStaffId = {},
 }) => {
   const { activeTimer, startTimer, stopTimer, isStarting, isStopping } = useTimer()
 
@@ -487,6 +539,7 @@ export const StaffWorkloadView: React.FC<StaffWorkloadViewProps> = ({
           staff={staff}
           items={items}
           activeTimer={activeTimer}
+          staffActiveTimer={staff.id ? activeTimersByStaffId[staff.id] : null}
           isStarting={isStarting}
           isStopping={isStopping}
           startTimer={startTimer}
