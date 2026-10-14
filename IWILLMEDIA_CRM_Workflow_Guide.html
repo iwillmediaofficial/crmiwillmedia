@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>IWILLMEDIA CRM — Complete Visual Workflow Guide</title>
+<style>
+  @page {
+    size: A4 portrait;
+    margin: 12mm 14mm 14mm 14mm;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    color: #1e293b;
+    background: #ffffff;
+    line-height: 1.45;
+    font-size: 9.5pt;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .page {
+    page-break-after: always;
+    min-height: 268mm;
+    position: relative;
+    padding-bottom: 10mm;
+  }
+
+  .page:last-child {
+    page-break-after: avoid;
+  }
+
+  /* Header banner */
+  .doc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2.5px solid #7c3aed;
+    padding-bottom: 8px;
+    margin-bottom: 14px;
+  }
+
+  .doc-header .logo-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .doc-header .logo-badge {
+    width: 36px;
+    height: 36px;
+    background: #7c3aed;
+    color: #ffffff;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 14pt;
+    letter-spacing: -0.5px;
+    box-shadow: 0 2px 4px rgba(124, 58, 237, 0.25);
+  }
+
+  .doc-header h1 {
+    font-size: 15pt;
+    color: #0f172a;
+    font-weight: 800;
+    line-height: 1.15;
+  }
+
+  .doc-header p {
+    font-size: 8.5pt;
+    color: #64748b;
+  }
+
+  .doc-header .meta-tag {
+    background: #f1f5f9;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 8pt;
+    font-weight: 600;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+  }
+
+  /* Headings */
+  h2.section-title {
+    font-size: 12.5pt;
+    color: #0f172a;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+  }
+
+  .section-subtitle {
+    font-size: 8.5pt;
+    color: #64748b;
+    margin-bottom: 12px;
+  }
+
+  /* Role Badges */
+  .badge-admin {
+    display: inline-block;
+    background: #ede9fe;
+    color: #6d28d9;
+    border: 1px solid #ddd6fe;
+    font-size: 7.5pt;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .badge-staff {
+    display: inline-block;
+    background: #e0f2fe;
+    color: #0369a1;
+    border: 1px solid #bae6fd;
+    font-size: 7.5pt;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .badge-both {
+    display: inline-block;
+    background: #ecfdf5;
+    color: #047857;
+    border: 1px solid #a7f3d0;
+    font-size: 7.5pt;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Grid layout */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .grid-4 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  /* Cards */
+  .card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+    padding: 10px 12px;
+    position: relative;
+  }
+
+  .card-admin {
+    border-color: #ddd6fe;
+    background: #faf5ff;
+  }
+
+  .card-staff {
+    border-color: #bae6fd;
+    background: #f0f9ff;
+  }
+
+  .card-success {
+    border-color: #bbf7d0;
+    background: #f0fdf4;
+  }
+
+  .card-warning {
+    border-color: #fde68a;
+    background: #fffbeb;
+  }
+
+  .card h3 {
+    font-size: 10pt;
+    color: #0f172a;
+    font-weight: 700;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .card p {
+    font-size: 8pt;
+    color: #475569;
+    line-height: 1.4;
+  }
+
+  .card ul {
+    margin-top: 6px;
+    margin-left: 16px;
+    font-size: 8pt;
+    color: #334155;
+  }
+
+  .card li {
+    margin-bottom: 3px;
+  }
+
+  /* Workflow Steps & Process Flow */
+  .flow-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .step-box {
+    flex: 1;
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 9px;
+    padding: 9px 11px;
+    position: relative;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+  }
+
+  .step-num {
+    display: inline-flex;
+    width: 20px;
+    height: 20px;
+    background: #7c3aed;
+    color: white;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    font-size: 8pt;
+    font-weight: 700;
+    margin-right: 5px;
+  }
+
+  .step-title {
+    font-size: 9pt;
+    font-weight: 700;
+    color: #0f172a;
+    display: inline;
+  }
+
+  .step-desc {
+    font-size: 7.5pt;
+    color: #475569;
+    margin-top: 4px;
+    line-height: 1.35;
+  }
+
+  .flow-arrow {
+    font-size: 14pt;
+    color: #7c3aed;
+    font-weight: 900;
+    user-select: none;
+  }
+
+  /* Visual diagram banner */
+  .diagram-container {
+    background: #f8fafc;
+    border: 1.5px dashed #cbd5e1;
+    border-radius: 9px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+  }
+
+  .diagram-title {
+    font-size: 8.5pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #475569;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* Table styling */
+  table.guide-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8pt;
+    margin-bottom: 12px;
+    background: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+  }
+
+  table.guide-table th {
+    background: #0f172a;
+    color: #ffffff;
+    text-align: left;
+    padding: 7px 9px;
+    font-weight: 600;
+    font-size: 7.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  table.guide-table td {
+    padding: 6.5px 9px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #334155;
+    vertical-align: middle;
+  }
+
+  table.guide-table tr:nth-child(even) td {
+    background: #f8fafc;
+  }
+
+  .tag-yes {
+    background: #dcfce7;
+    color: #15803d;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 7pt;
+    display: inline-block;
+  }
+
+  .tag-no {
+    background: #fee2e2;
+    color: #b91c1c;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 7pt;
+    display: inline-block;
+  }
+
+  .tag-view {
+    background: #e0f2fe;
+    color: #0369a1;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 7pt;
+    display: inline-block;
+  }
+
+  /* Highlight callout box */
+  .callout {
+    border-left: 3.5px solid #7c3aed;
+    background: #f5f3ff;
+    padding: 7px 11px;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 10px;
+    font-size: 8pt;
+    color: #4c1d95;
+    line-height: 1.4;
+  }
+
+  .callout-title {
+    font-weight: 700;
+    margin-bottom: 2px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .footer-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 5px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 7.5pt;
+    color: #94a3b8;
+  }
+</style>
+</head>
+<body>
+
+  <!-- ==================== PAGE 1 ==================== -->
+  <div class="page">
+    <div class="doc-header">
+      <div class="logo-group">
+        <div class="logo-badge">IW</div>
+        <div>
+          <h1>IWILLMEDIA CRM — Visual Workflow Guide</h1>
+          <p>Simple, Plain-English Operating Guide for Staff (Users) & Administrators</p>
+        </div>
+      </div>
+      <div class="meta-tag">Standard Operating Procedure</div>
+    </div>
+
+    <h2 class="section-title">1. System Overview: The Two Core Roles</h2>
+    <p class="section-subtitle">The CRM separates everyday execution from managerial oversight so everyone stays focused and efficient.</p>
+
+    <div class="grid-2">
+      <div class="card card-staff">
+        <h3>
+          <span>👤 Staff Role (The User / Doer)</span>
+          <span class="badge-staff">Team Member</span>
+        </h3>
+        <p><strong>Primary Mission:</strong> Complete daily deliverables, clock accurate session timers, handle blockers, and contact assigned leads.</p>
+        <ul>
+          <li><strong>Work Deliverables:</strong> Receives work assignments with an instant audio chime alert. Starts and stops personal timer.</li>
+          <li><strong>Holds / Blockers:</strong> Can mark tasks "Pending" if waiting for client assets, logos, or approvals.</li>
+          <li><strong>Leads Follow-Up:</strong> Sees assigned leads and clicks WhatsApp to chat directly with prospective clients.</li>
+          <li><strong>Protected View:</strong> Financial records, billing invoices, and rates are hidden to ensure privacy.</li>
+        </ul>
+      </div>
+
+      <div class="card card-admin">
+        <h3>
+          <span>🛡️ Admin Role (The Manager / Overseer)</span>
+          <span class="badge-admin">Management</span>
+        </h3>
+        <p><strong>Primary Mission:</strong> Manage clients, assign work items to team members, monitor live timers in real-time, and manage billing retainers.</p>
+        <ul>
+          <li><strong>Master Control:</strong> Create clients, assign deliverables to team members, update priorities, and set deadlines.</li>
+          <li><strong>Live Oversight:</strong> Sees a real-time banner of who is working right now with ticking stopwatches.</li>
+          <li><strong>Billing Management:</strong> Creates monthly retainers and manages invoices across INR (₹), AED (د.إ), and USD ($).</li>
+          <li><strong>Safety & Authority:</strong> Exclusively deletes work items, creates staff accounts, and views financial reports.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="diagram-container">
+      <div class="diagram-title">🔄 Complete End-to-End Business Journey (Normal-Man View)</div>
+      
+      <div class="flow-row">
+        <div class="step-box" style="border-color: #38bdf8; background: #f0f9ff;">
+          <span class="step-num" style="background: #0284c7;">1</span>
+          <span class="step-title">Lead Comes In</span>
+          <p class="step-desc">Prospect fills Meta Ads form or website link. Lead auto-routes to a staff member.</p>
+        </div>
+        <div class="flow-arrow">➔</div>
+        <div class="step-box" style="border-color: #a855f7; background: #faf5ff;">
+          <span class="step-num" style="background: #7c3aed;">2</span>
+          <span class="step-title">Follow-up & Won</span>
+          <p class="step-desc">Staff chats via WhatsApp. When status is set to <strong>"Won"</strong>, CRM auto-creates a Client!</p>
+        </div>
+        <div class="flow-arrow">➔</div>
+        <div class="step-box" style="border-color: #6366f1; background: #eef2ff;">
+          <span class="step-num" style="background: #4f46e5;">3</span>
+          <span class="step-title">Work Assigned</span>
+          <p class="step-desc">Admin assigns task. Staff hears a chime. Task appears on staff workload card.</p>
+        </div>
+      </div>
+
+      <div class="flow-row" style="margin-bottom: 0;">
+        <div class="step-box" style="border-color: #10b981; background: #ecfdf5;">
+          <span class="step-num" style="background: #059669;">4</span>
+          <span class="step-title">Live Work Timer</span>
+          <p class="step-desc">Staff clicks <strong>"Start Timer"</strong>. Clock ticks live. Admin sees live green indicator.</p>
+        </div>
+        <div class="flow-arrow">➔</div>
+        <div class="step-box" style="border-color: #f59e0b; background: #fffbeb;">
+          <span class="step-num" style="background: #d97706;">5</span>
+          <span class="step-title">Delivery & Done</span>
+          <p class="step-desc">Staff finishes project and clicks <strong>"Complete"</strong>. Time is logged forever into project history.</p>
+        </div>
+        <div class="flow-arrow">➔</div>
+        <div class="step-box" style="border-color: #14b8a6; background: #f0fdfa;">
+          <span class="step-num" style="background: #0d9488;">6</span>
+          <span class="step-title">Billing & Invoice</span>
+          <p class="step-desc">Billable tasks auto-create invoices. Recurring monthly retainers generate automatically!</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">💡 The 3 Key Buttons for Staff Members</div>
+      Staff only need to know 3 buttons: <strong>Start Timer</strong> when starting work, <strong>Mark Pending</strong> if blocked by client feedback, and <strong>Complete</strong> when the deliverable is finished. The CRM handles notifications, timesheets, and invoices automatically.
+    </div>
+
+    <div class="footer-bar">
+      <span>IWILLMEDIA CRM — Standard Operating Procedure</span>
+      <span>Page 1 of 4</span>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 2 ==================== -->
+  <div class="page">
+    <div class="doc-header">
+      <div class="logo-group">
+        <div class="logo-badge">IW</div>
+        <div>
+          <h1>Workflow 1: Sales Leads to Active Clients</h1>
+          <p>How new inquiries turn into paying clients without manual copy-pasting</p>
+        </div>
+      </div>
+      <div class="badge-both">Sales & Management Workflow</div>
+    </div>
+
+    <h2 class="section-title">2. The Lead-to-Client Journey (Step-by-Step)</h2>
+    <p class="section-subtitle">Automated pipeline that captures ads inquiries and eliminates lost leads.</p>
+
+    <div class="step-box" style="margin-bottom: 10px;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <span class="step-num">1</span>
+          <span class="step-title">Lead Capture via Meta Instant Form or Direct Link</span>
+        </div>
+        <span class="badge-both">Automated / Admin</span>
+      </div>
+      <p class="step-desc" style="font-size: 8pt; margin-top: 4px;">
+        • Prospects click your Instagram/Facebook Ad and submit the instant form. Or, admin manually adds a lead in <code>/leads</code>.<br>
+        • Lead instantly records Name, Phone, Email, Campaign Details, and custom question responses.
+      </p>
+    </div>
+
+    <div class="step-box" style="margin-bottom: 10px;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <span class="step-num">2</span>
+          <span class="step-title">Automatic Staff Routing & Notification</span>
+        </div>
+        <span class="badge-staff">Staff Notification</span>
+      </div>
+      <p class="step-desc" style="font-size: 8pt; margin-top: 4px;">
+        • The form link automatically assigns incoming leads to the specific staff member chosen during form setup.<br>
+        • Staff receives an alert and sees the prospect immediately on their Leads screen.
+      </p>
+    </div>
+
+    <div class="step-box" style="margin-bottom: 10px;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <span class="step-num">3</span>
+          <span class="step-title">One-Click WhatsApp Follow-Up</span>
+        </div>
+        <span class="badge-staff">Staff Action</span>
+      </div>
+      <p class="step-desc" style="font-size: 8pt; margin-top: 4px;">
+        • Staff clicks the green <strong>WhatsApp</strong> button on the lead row — opening a pre-filled WhatsApp conversation.<br>
+        • Staff updates the lead status: <code>New</code> ➔ <code>Follow-up</code> ➔ <code>Interested</code>, and logs meeting remarks.
+      </p>
+    </div>
+
+    <div class="step-box" style="margin-bottom: 12px; border-color: #10b981; background: #ecfdf5;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <span class="step-num" style="background: #059669;">4</span>
+          <span class="step-title">Deal Closed ➔ Auto-Creation of Client Company!</span>
+        </div>
+        <span class="badge-both">Automated Magic</span>
+      </div>
+      <p class="step-desc" style="font-size: 8pt; margin-top: 4px; color: #065f46;">
+        • As soon as the lead status is updated to <strong>"Won"</strong>, the CRM automatically creates a new Client company in <code>/clients</code>!<br>
+        • No manual data entry: the client name, phone number, and contact info are created instantly so work can be assigned!
+      </p>
+    </div>
+
+    <div class="diagram-container">
+      <div class="diagram-title">📊 Visual Lead Stages & What They Mean</div>
+      <div class="flow-row" style="margin-bottom: 0;">
+        <div class="step-box" style="text-align: center; background: #e0f2fe; border-color: #38bdf8;">
+          <strong style="color: #0369a1; font-size: 8.5pt;">NEW</strong>
+          <p style="font-size: 7.5pt; color: #0284c7; margin-top: 2px;">Fresh Inquiry</p>
+        </div>
+        <div class="flow-arrow">➔</div>
+        <div class="step-box" style="text-align: center; background: #fef3c7; border-color: #fbbf24;">
+          <strong style="color: #b45309; font-size: 8.5pt;">FOLLOW-UP</strong>
+          <p style="font-size: 7.5pt; color: #92400e; margin-top: 2px;">Call / Chat Sent</p>
+        </div>
+        <div class="flow-arrow">➔</div>
+        <div class="step-box" style="text-align: center; background: #f3e8ff; border-color: #c084fc;">
+          <strong style="color: #7e22ce; font-size: 8.5pt;">INTERESTED</strong>
+          <p style="font-size: 7.5pt; color: #6b21a8; margin-top: 2px;">Proposal Review</p>
+        </div>
+        <div class="flow-arrow">➔</div>
+        <div class="step-box" style="text-align: center; background: #dcfce7; border-color: #4ade80;">
+          <strong style="color: #15803d; font-size: 8.5pt;">WON 🎉</strong>
+          <p style="font-size: 7.5pt; color: #166534; margin-top: 2px;">Auto-creates Client</p>
+        </div>
+        <div class="flow-arrow">➔</div>
+        <div class="step-box" style="text-align: center; background: #f1f5f9; border-color: #cbd5e1;">
+          <strong style="color: #64748b; font-size: 8.5pt;">LOST</strong>
+          <p style="font-size: 7.5pt; color: #475569; margin-top: 2px;">Cold / Closed</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>📱 Meta Instant Lead Form Features</h3>
+        <p>• Native Meta Blue design with mobile-optimized layout.<br>
+        • Custom questions (dropdowns, text fields, checkboxes).<br>
+        • WhatsApp business quick-connect on completion screen.<br>
+        • Zero manual CSV exports: leads flow straight into CRM.</p>
+      </div>
+      <div class="card">
+        <h3>🏢 360° Client Profile Overview</h3>
+        <p>Once converted, the Client profile drawer shows:<br>
+        • Every historical task assigned to any staff member.<br>
+        • Active monthly retainer contracts.<br>
+        • Full invoice ledger (Paid, Pending, Overdue).</p>
+      </div>
+    </div>
+
+    <div class="footer-bar">
+      <span>IWILLMEDIA CRM — Standard Operating Procedure</span>
+      <span>Page 2 of 4</span>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 3 ==================== -->
+  <div class="page">
+    <div class="doc-header">
+      <div class="logo-group">
+        <div class="logo-badge">IW</div>
+        <div>
+          <h1>Workflow 2: Staff Work & Live Timer Tracking</h1>
+          <p>Daily task execution, live stopwatches, blocker holds, and completion</p>
+        </div>
+      </div>
+      <div class="badge-both">Daily Operations</div>
+    </div>
+
+    <h2 class="section-title">3. Daily Work Deliverables Cycle</h2>
+    <p class="section-subtitle">Designed for clear accountability: staff always know what to work on, when it's due, and time spent.</p>
+
+    <div class="grid-2" style="margin-bottom: 12px;">
+      <div class="card card-admin">
+        <h3>Step A: Admin Assigns Work</h3>
+        <p><strong>Admin opens <code>/work</code> and clicks "Assign Work":</strong></p>
+        <ul>
+          <li>Selects Client & Deliverable Title (e.g. <em>"Brand Video Reel"</em>).</li>
+          <li>Assigns to designated Staff Member.</li>
+          <li>Sets Due Date and Priority (Low, Normal, High, Urgent).</li>
+          <li>Optional: Enters Billable Amount (masked from staff).</li>
+        </ul>
+      </div>
+
+      <div class="card card-staff">
+        <h3>Step B: Staff Hears Audio Alert</h3>
+        <p><strong>Staff receives immediate real-time alert:</strong></p>
+        <ul>
+          <li>A pleasant audio chime plays through computer speakers.</li>
+          <li>A notification toast displays the new assignment.</li>
+          <li>Task appears inside the staff member's workload card under <strong>"Active"</strong>.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="diagram-container">
+      <div class="diagram-title">⏱️ The 4 Work Item Statuses</div>
+      
+      <div class="grid-4">
+        <div class="card" style="border-color: #38bdf8; background: #f0f9ff;">
+          <h3 style="color: #0369a1; font-size: 9pt;">1. Assigned</h3>
+          <p style="font-size: 7.5pt; color: #0284c7;">Waiting in queue to be started.</p>
+          <div style="margin-top: 5px; font-weight: 700; font-size: 7.5pt; color: #0284c7;">Action: "Start Timer"</div>
+        </div>
+
+        <div class="card" style="border-color: #a855f7; background: #faf5ff;">
+          <h3 style="color: #7e22ce; font-size: 9pt;">2. In Progress</h3>
+          <p style="font-size: 7.5pt; color: #6b21a8;">Staff is actively working. Live ticker runs.</p>
+          <div style="margin-top: 5px; font-weight: 700; font-size: 7.5pt; color: #7e22ce;">Action: Work on project</div>
+        </div>
+
+        <div class="card" style="border-color: #f59e0b; background: #fffbeb;">
+          <h3 style="color: #b45309; font-size: 9pt;">3. Pending (Hold)</h3>
+          <p style="font-size: 7.5pt; color: #92400e;">Paused due to blocker or client delay.</p>
+          <div style="margin-top: 5px; font-weight: 700; font-size: 7.5pt; color: #b45309;">Action: "Resume Work"</div>
+        </div>
+
+        <div class="card" style="border-color: #10b981; background: #ecfdf5;">
+          <h3 style="color: #15803d; font-size: 9pt;">4. Completed</h3>
+          <p style="font-size: 7.5pt; color: #166534;">Milestone finished and delivered.</p>
+          <div style="margin-top: 5px; font-weight: 700; font-size: 7.5pt; color: #15803d;">Action: Auto-generates bill</div>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="section-title" style="margin-top: 4px;">How Timers and Blockers Work</h2>
+
+    <div class="grid-3">
+      <div class="card">
+        <h3>🟢 Starting the Timer</h3>
+        <p>• Click <strong>"Start Timer"</strong> on any task.<br>
+        • Top navigation bar turns purple with a pulsing green dot tracking <code>01:24:35</code>.<br>
+        • Starting a new timer automatically stops any previous active timer (prevents double billing).</p>
+      </div>
+
+      <div class="card">
+        <h3>⚠️ Blocker / Hold Reason</h3>
+        <p>• If waiting for client approval, click <strong>"Mark Pending"</strong>.<br>
+        • Type the hold reason (e.g. <em>"Waiting for client logo asset"</em>) and expected resume date.<br>
+        • Keeps everyone aligned so deadlines can be adjusted.</p>
+      </div>
+
+      <div class="card">
+        <h3>✅ Completing the Task</h3>
+        <p>• When deliverable is done, click <strong>"Complete"</strong>.<br>
+        • Total accumulated time is permanently recorded.<br>
+        • If the deliverable is billable, an invoice is automatically placed into <code>/billing</code> for admin approval!</p>
+      </div>
+    </div>
+
+    <div class="callout" style="border-left-color: #0284c7; background: #f0f9ff; color: #0369a1;">
+      <div class="callout-title">📋 Workload Section Filters (All • Active • On going • Pending • Done)</div>
+      Staff cards load 5 deliverables at a time with a <strong>"Load More"</strong> button for clean page loading. Staff can filter deliverables instantly using the top filter buttons.
+    </div>
+
+    <div class="footer-bar">
+      <span>IWILLMEDIA CRM — Standard Operating Procedure</span>
+      <span>Page 3 of 4</span>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 4 ==================== -->
+  <div class="page">
+    <div class="doc-header">
+      <div class="logo-group">
+        <div class="logo-badge">IW</div>
+        <div>
+          <h1>Workflow 3 & 4: Billing & Admin Control Room</h1>
+          <p>Recurring retainers, invoice lifecycle, and real-time team oversight</p>
+        </div>
+      </div>
+      <div class="badge-admin">Admin & Finance Focus</div>
+    </div>
+
+    <h2 class="section-title">4. Billing, Retainers & Calendar Overview</h2>
+    <p class="section-subtitle">Cashflow tracking supporting INR (₹), AED (د.إ), and USD ($).</p>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>🔄 Monthly Retainer Contracts</h3>
+        <p><strong>Set up once, auto-generates forever:</strong><br>
+        • In <code>/billing</code> under Retainers, create a template (e.g. <em>"Monthly Digital Marketing — ₹30,000 due 5th of every month"</em>).<br>
+        • The CRM automatically generates the individual monthly occurrence bills on schedule without disturbing the master contract!</p>
+      </div>
+
+      <div class="card">
+        <h3>📅 Visual Monthly Billing Calendar</h3>
+        <p><strong>Color-coded day-by-day cashflow:</strong><br>
+        • Open <code>/calendar</code> to see all bills mapped onto calendar days.<br>
+        • <span style="color:#059669; font-weight:700;">🟢 Emerald</span> = Paid Invoices<br>
+        • <span style="color:#d97706; font-weight:700;">🟡 Amber</span> = Pending Invoices<br>
+        • <span style="color:#e11d48; font-weight:700;">🔴 Rose</span> = Overdue Invoices</p>
+      </div>
+    </div>
+
+    <h2 class="section-title" style="margin-top: 8px;">5. Admin Control Room: Live Team Timers & Safety</h2>
+
+    <div class="card card-admin" style="margin-bottom: 10px;">
+      <h3>🛡️ Real-Time Team Activity Tracking (Zero API Cost)</h3>
+      <p style="font-size: 8pt;">
+        Admins have complete live visibility across the agency through 3 integrated views:
+      </p>
+      <div class="grid-3" style="margin-top: 6px; margin-bottom: 0;">
+        <div style="background: white; border: 1px solid #ddd6fe; border-radius: 7px; padding: 7px;">
+          <strong style="font-size: 8pt; color: #6d28d9;">1. Top Live Activity Bar</strong>
+          <p style="font-size: 7.5pt; color: #475569; margin-top: 2px;">At top of <code>/work</code>, see clickable chips of every clocked-in staff with live elapsed timers.</p>
+        </div>
+        <div style="background: white; border: 1px solid #ddd6fe; border-radius: 7px; padding: 7px;">
+          <strong style="font-size: 8pt; color: #6d28d9;">2. Staff Card Badges</strong>
+          <p style="font-size: 7.5pt; color: #475569; margin-top: 2px;">Card header pulses green: <code>🟢 Working: Aswin Video (01:24:12)</code> with glowing row borders.</p>
+        </div>
+        <div style="background: white; border: 1px solid #ddd6fe; border-radius: 7px; padding: 7px;">
+          <strong style="font-size: 8pt; color: #6d28d9;">3. Dashboard Widget</strong>
+          <p style="font-size: 7.5pt; color: #475569; margin-top: 2px;">Directly on <code>/dashboard</code>, lists active team sessions, client names, and elapsed duration.</p>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="section-title">6. Permission Matrix: Who Can Do What?</h2>
+
+    <table class="guide-table">
+      <thead>
+        <tr>
+          <th>Action / Feature</th>
+          <th>Staff (User)</th>
+          <th>Administrator</th>
+          <th>Explanation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Start / Stop Personal Timer</strong></td>
+          <td><span class="tag-yes">YES</span></td>
+          <td><span class="tag-yes">YES</span></td>
+          <td>Staff control their own active sessions</td>
+        </tr>
+        <tr>
+          <td><strong>Stop Another Staff's Timer</strong></td>
+          <td><span class="tag-no">NO</span></td>
+          <td><span class="tag-no">NO</span></td>
+          <td>Guarded so only the assigned staff member can stop their timer</td>
+        </tr>
+        <tr>
+          <td><strong>See Live Working Staff Tickers</strong></td>
+          <td><span class="tag-no">NO</span></td>
+          <td><span class="tag-yes">YES</span></td>
+          <td>Admins see live activity across all staff members</td>
+        </tr>
+        <tr>
+          <td><strong>View Task Remarks & Due Dates</strong></td>
+          <td><span class="tag-yes">YES</span></td>
+          <td><span class="tag-yes">YES</span></td>
+          <td>Click "View Task" popup on any deliverable</td>
+        </tr>
+        <tr>
+          <td><strong>View Billable / Billing Amounts</strong></td>
+          <td><span class="tag-no">MASKED</span></td>
+          <td><span class="tag-yes">VISIBLE</span></td>
+          <td>Financial confidentiality strictly enforced</td>
+        </tr>
+        <tr>
+          <td><strong>Edit / Reassign Deliverables</strong></td>
+          <td><span class="tag-no">NO</span></td>
+          <td><span class="tag-yes">YES</span></td>
+          <td>Only Admins can change assignments and due dates</td>
+        </tr>
+        <tr>
+          <td><strong>Delete Work Deliverables</strong></td>
+          <td><span class="tag-no">NO</span></td>
+          <td><span class="tag-yes">YES</span></td>
+          <td>Admin-only action with confirmation & safe cascade cleanup</td>
+        </tr>
+        <tr>
+          <td><strong>Create Staff Accounts</strong></td>
+          <td><span class="tag-no">NO</span></td>
+          <td><span class="tag-yes">YES</span></td>
+          <td>Created instantly via admin staff provisioning</td>
+        </tr>
+        <tr>
+          <td><strong>Mark Invoices as Paid</strong></td>
+          <td><span class="tag-no">NO</span></td>
+          <td><span class="tag-yes">YES</span></td>
+          <td>One-click payment reconciliation in Billing ledger</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="footer-bar">
+      <span>IWILLMEDIA CRM — Standard Operating Procedure</span>
+      <span>Page 4 of 4</span>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -6,6 +6,7 @@ import {
   Briefcase,
   Building2,
   Receipt,
+  Wallet,
   CalendarDays,
   UserCheck,
   Settings,
@@ -36,6 +37,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     { label: 'Staff Work', path: '/work', icon: Briefcase },
     { label: 'Clients', path: '/clients', icon: Building2 },
     { label: 'Billing', path: '/billing', icon: Receipt },
+    ...(isAdmin
+      ? [{ label: 'Ad Fund', path: '/ad-funds', icon: Wallet }]
+      : []),
     { label: 'Billing Calendar', path: '/calendar', icon: CalendarDays },
     ...(isAdmin
       ? [

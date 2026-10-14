@@ -18,6 +18,7 @@ const WorkPage = lazy(() => import('./features/work/pages/WorkPage').then(m => (
 const ClientsPage = lazy(() => import('./features/clients/pages/ClientsPage').then(m => ({ default: m.ClientsPage })))
 const BillingPage = lazy(() => import('./features/billing/pages/BillingPage').then(m => ({ default: m.BillingPage })))
 const BillingCalendarPage = lazy(() => import('./features/calendar/pages/BillingCalendarPage').then(m => ({ default: m.BillingCalendarPage })))
+const AdFundPage = lazy(() => import('./features/ad-funds/pages/AdFundPage').then(m => ({ default: m.AdFundPage })))
 const StaffPage = lazy(() => import('./features/staff/pages/StaffPage').then(m => ({ default: m.StaffPage })))
 const SettingsPage = lazy(() => import('./features/settings/pages/SettingsPage').then(m => ({ default: m.SettingsPage })))
 const MetaInstantFormPage = lazy(() => import('./features/public-form/pages/MetaInstantFormPage').then(m => ({ default: m.MetaInstantFormPage })))
@@ -60,6 +61,8 @@ export function App() {
 
                   {/* Admin Only Routes */}
                   <Route element={<ProtectedRoute requiredRole="admin" />}>
+                    <Route path="/ad-funds" element={<AdFundPage />} />
+                    <Route path="/ad-fund" element={<Navigate to="/ad-funds" replace />} />
                     <Route path="/staff" element={<StaffPage />} />
                     <Route path="/settings" element={<SettingsPage />} />
                   </Route>

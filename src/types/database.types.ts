@@ -297,6 +297,10 @@ export type Database = {
           status: string
           updated_at: string
           website: string | null
+          monthly_ad_fund: number
+          ad_platforms: string[]
+          ad_fund_status: string
+          is_dm_client: boolean
         }
         Insert: {
           address?: string | null
@@ -312,6 +316,10 @@ export type Database = {
           status?: string
           updated_at?: string
           website?: string | null
+          monthly_ad_fund?: number
+          ad_platforms?: string[]
+          ad_fund_status?: string
+          is_dm_client?: boolean
         }
         Update: {
           address?: string | null
@@ -327,6 +335,10 @@ export type Database = {
           status?: string
           updated_at?: string
           website?: string | null
+          monthly_ad_fund?: number
+          ad_platforms?: string[]
+          ad_fund_status?: string
+          is_dm_client?: boolean
         }
         Relationships: [
           {
@@ -699,6 +711,123 @@ export type Database = {
           },
         ]
       }
+      ad_fund_transactions: {
+        Row: {
+          amount: number
+          client_id: string
+          created_at: string
+          currency: string
+          id: string
+          notes: string | null
+          payer_name: string | null
+          payment_type: string
+          platform: string
+          recorded_by: string | null
+          transaction_date: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          client_id: string
+          created_at?: string
+          currency?: string
+          id?: string
+          notes?: string | null
+          payer_name?: string | null
+          payment_type: string
+          platform?: string
+          recorded_by?: string | null
+          transaction_date?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          client_id?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          notes?: string | null
+          payer_name?: string | null
+          payment_type?: string
+          platform?: string
+          recorded_by?: string | null
+          transaction_date?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_fund_transactions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ad_fund_transactions_recorded_by_fkey"
+            columns: ["recorded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_ad_fund_payments: {
+        Row: {
+          amount: number
+          client_id: string
+          created_at: string
+          currency: string
+          id: string
+          notes: string | null
+          payment_date: string
+          payment_method: string
+          reference_no: string | null
+          recorded_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          client_id: string
+          created_at?: string
+          currency?: string
+          id?: string
+          notes?: string | null
+          payment_date?: string
+          payment_method?: string
+          reference_no?: string | null
+          recorded_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          client_id?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          notes?: string | null
+          payment_date?: string
+          payment_method?: string
+          reference_no?: string | null
+          recorded_by?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_ad_fund_payments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_ad_fund_payments_recorded_by_fkey"
+            columns: ["recorded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -727,3 +856,12 @@ export type Attachment = Database['public']['Tables']['attachments']['Row']
 export type ActivityLog = Database['public']['Tables']['activity_logs']['Row']
 export type Notification = Database['public']['Tables']['notifications']['Row']
 export type AppSetting = Database['public']['Tables']['app_settings']['Row']
+export type AdFundTransaction = Database['public']['Tables']['ad_fund_transactions']['Row']
+export type AdFundTransactionInsert = Database['public']['Tables']['ad_fund_transactions']['Insert']
+export type ClientAdFundPayment = Database['public']['Tables']['client_ad_fund_payments']['Row']
+export type ClientAdFundPaymentInsert = Database['public']['Tables']['client_ad_fund_payments']['Insert']
+export type AdPlatform = 'meta' | 'instagram' | 'google_ads' | 'other'
+export type AdFundPaymentType = 'company' | 'personal' | 'client'
+export type AdFundStatus = 'active' | 'paused' | 'pending' | 'low_fund'
+
+

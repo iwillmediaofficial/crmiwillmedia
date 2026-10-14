@@ -15,6 +15,7 @@ const clientSchema = z.object({
   website: z.string().optional(),
   address: z.string().optional(),
   status: z.string().min(1, 'Status is required'),
+  is_dm_client: z.boolean().optional(),
   notes: z.string().optional(),
 })
 
@@ -50,6 +51,7 @@ export const ClientModal: React.FC<ClientModalProps> = ({
       website: '',
       address: '',
       status: 'active',
+      is_dm_client: false,
       notes: '',
     },
   })
@@ -64,6 +66,7 @@ export const ClientModal: React.FC<ClientModalProps> = ({
         website: initialClient.website || '',
         address: initialClient.address || '',
         status: initialClient.status,
+        is_dm_client: initialClient.is_dm_client ?? false,
         notes: initialClient.notes || '',
       })
     } else {
@@ -75,6 +78,7 @@ export const ClientModal: React.FC<ClientModalProps> = ({
         website: '',
         address: '',
         status: 'active',
+        is_dm_client: false,
         notes: '',
       })
     }
@@ -160,6 +164,21 @@ export const ClientModal: React.FC<ClientModalProps> = ({
           placeholder="Building, Street, City, Country"
           {...register('address')}
         />
+
+        <div className="flex items-center gap-2.5 p-3 bg-brand-50/60 rounded-xl border border-brand-100">
+          <input
+            type="checkbox"
+            id="is_dm_client"
+            className="w-4 h-4 text-brand-600 rounded border-slate-300 focus:ring-brand-500"
+            {...register('is_dm_client')}
+          />
+          <label htmlFor="is_dm_client" className="text-xs font-semibold text-slate-800 cursor-pointer">
+            Digital Marketing (DM) Client
+            <span className="block text-[11px] font-normal text-slate-500">
+              Enables social media Ad Fund tracking and monthly budget allocation.
+            </span>
+          </label>
+        </div>
 
         <div className="space-y-1.5">
           <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600">
