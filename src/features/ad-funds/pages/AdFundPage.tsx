@@ -28,9 +28,10 @@ import { formatCurrency, formatDate } from '@/lib/formatters'
 import { format, subMonths, addMonths } from 'date-fns'
 
 export const AdFundPage: React.FC = () => {
-  // Current month default in format "yyyy-MM" (e.g. "2026-10")
+  // Current month default in format "yyyy-MM", starting from October 2026
   const [selectedYearMonth, setSelectedYearMonth] = useState<string>(() => {
-    return format(new Date(), 'yyyy-MM')
+    const cur = format(new Date(), 'yyyy-MM')
+    return cur < '2026-10' ? '2026-10' : cur
   })
 
   // Filters
@@ -68,12 +69,12 @@ export const AdFundPage: React.FC = () => {
     removeDmClient,
   } = useAdFunds(selectedYearMonth)
 
-  // Month selector options (Current year around today: past 6 months to next 3 months)
+  // Month selector options: only from October 2026 onwards
   const monthOptions = React.useMemo(() => {
     const list = []
-    const baseDate = new Date()
-    for (let i = -5; i <= 3; i++) {
-      const d = addMonths(baseDate, i)
+    const startDate = new Date('2026-10-01')
+    for (let i = 0; i <= 5; i++) {
+      const d = addMonths(startDate, i)
       list.push({
         value: format(d, 'yyyy-MM'),
         label: format(d, 'MMMM yyyy'),
@@ -81,13 +82,22 @@ export const AdFundPage: React.FC = () => {
     }
     // Ensure selected is in list
     if (!list.some((o) => o.value === selectedYearMonth)) {
-      list.unshift({
+      list.push({
         value: selectedYearMonth,
         label: format(new Date(`${selectedYearMonth}-01`), 'MMMM yyyy'),
       })
     }
     return list
   }, [selectedYearMonth])
+
+  // Map of client ID to their available un-used fund
+  const clientUnusedMap = React.useMemo(() => {
+    const map: Record<string, number> = {}
+    summaries.forEach((s) => {
+      map[s.client.id] = s.available_unused_fund
+    })
+    return map
+  }, [summaries])
 
   // Filter summaries
   const filteredSummaries = summaries.filter((item) => {
@@ -260,6 +270,11 @@ export const AdFundPage: React.FC = () => {
             <span className="text-2xl font-black text-slate-900 tracking-tight mt-0.5 block">
               {formatCurrency(stats.totalAssigned, 'INR')}
             </span>
+            {stats.totalPrevUnused > 0 && (
+              <span className="text-[11px] font-medium text-indigo-600 block mt-0.5">
+                ₹{stats.totalPrevUnused.toLocaleString('en-IN')} unused from prev month
+              </span>
+            )}
           </div>
         </div>
 
@@ -379,6 +394,7 @@ export const AdFundPage: React.FC = () => {
                   <th className="py-3 px-2 text-center whitespace-nowrap">Platform</th>
                   <th className="py-3 px-2 text-center whitespace-nowrap">Status</th>
                   <th className="py-3 px-2 text-right whitespace-nowrap">Monthly Fund</th>
+                  <th className="py-3 px-2 text-right whitespace-nowrap" title="Base Monthly Fund + Available Un-used Carryover">Original Ad Fund</th>
                   <th className="py-3 px-2 text-right whitespace-nowrap">Uploaded</th>
                   <th className="py-3 px-2 text-right whitespace-nowrap">Client Paid</th>
                   <th className="py-3 px-2 text-right whitespace-nowrap">To Collect</th>
@@ -439,6 +455,21 @@ export const AdFundPage: React.FC = () => {
                       {/* Monthly Ad Fund Budget */}
                       <td className="py-2.5 px-2 font-semibold text-slate-900 whitespace-nowrap text-right">
                         {formatCurrency(item.monthly_ad_fund, 'INR')}
+                      </td>
+
+                      {/* Original Ad Fund (Monthly Fund + Available Unused) */}
+                      <td className="py-2.5 px-2 font-semibold whitespace-nowrap text-right">
+                        <span
+                          className="text-indigo-600 font-bold"
+                          title={`Base Monthly: ₹${item.monthly_ad_fund.toLocaleString('en-IN')} + Unused Remaining: ₹${item.available_unused_fund.toLocaleString('en-IN')} (Initial: ₹${item.prev_unused_amount.toLocaleString('en-IN')})`}
+                        >
+                          {formatCurrency(item.original_ad_fund, 'INR')}
+                        </span>
+                        {item.available_unused_fund > 0 && (
+                          <span className="text-[10px] text-indigo-500/80 block -mt-0.5">
+                            +₹{item.available_unused_fund.toLocaleString('en-IN')} unused
+                          </span>
+                        )}
                       </td>
 
                       {/* Uploaded by Us (This Month) */}
@@ -530,6 +561,7 @@ export const AdFundPage: React.FC = () => {
         onClose={() => setIsAddModalOpen(false)}
         clients={dmClients.length > 0 ? dmClients : allClients}
         initialClientId={selectedClientForFund?.id || null}
+        clientUnusedMap={clientUnusedMap}
         onSubmit={async (payload) => {
           await addFund(payload)
         }}
@@ -553,6 +585,11 @@ export const AdFundPage: React.FC = () => {
             setSelectedSummaryForPayment({
               client: c,
               monthly_ad_fund: c.monthly_ad_fund,
+              original_ad_fund: c.monthly_ad_fund,
+              prev_unused_amount: 0,
+              all_prev_unused_amount: 0,
+              available_unused_fund: 0,
+              accumulated_unused_spent: 0,
               uploaded_amount: 0,
               client_paid_amount: 0,
               need_collection_amount: 0,

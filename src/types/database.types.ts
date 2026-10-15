@@ -828,6 +828,57 @@ export type Database = {
           },
         ]
       }
+      client_ad_fund_adjustments: {
+        Row: {
+          id: string
+          client_id: string
+          year_month: string
+          amount: number
+          adjustment_type: string
+          notes: string | null
+          recorded_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          client_id: string
+          year_month: string
+          amount: number
+          adjustment_type?: string
+          notes?: string | null
+          recorded_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          client_id?: string
+          year_month?: string
+          amount?: number
+          adjustment_type?: string
+          notes?: string | null
+          recorded_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_ad_fund_adjustments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_ad_fund_adjustments_recorded_by_fkey"
+            columns: ["recorded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -860,8 +911,11 @@ export type AdFundTransaction = Database['public']['Tables']['ad_fund_transactio
 export type AdFundTransactionInsert = Database['public']['Tables']['ad_fund_transactions']['Insert']
 export type ClientAdFundPayment = Database['public']['Tables']['client_ad_fund_payments']['Row']
 export type ClientAdFundPaymentInsert = Database['public']['Tables']['client_ad_fund_payments']['Insert']
+export type ClientAdFundAdjustment = Database['public']['Tables']['client_ad_fund_adjustments']['Row']
+export type ClientAdFundAdjustmentInsert = Database['public']['Tables']['client_ad_fund_adjustments']['Insert']
+export type ClientAdFundAdjustmentUpdate = Database['public']['Tables']['client_ad_fund_adjustments']['Update']
 export type AdPlatform = 'meta' | 'instagram' | 'google_ads' | 'other'
-export type AdFundPaymentType = 'company' | 'personal' | 'client'
+export type AdFundPaymentType = 'company' | 'personal' | 'client' | 'unused_fund'
 export type AdFundStatus = 'active' | 'paused' | 'pending' | 'low_fund'
 
 

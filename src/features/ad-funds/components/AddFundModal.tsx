@@ -3,7 +3,7 @@ import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { Client, AdPlatform, AdFundPaymentType } from '@/types/database.types'
 import { MetaIcon, GoogleAdsIcon } from './PlatformIcons'
-import { Building2, User, Calendar, IndianRupee, FileText, Briefcase } from 'lucide-react'
+import { Building2, User, Calendar, IndianRupee, FileText, Briefcase, Coins, AlertCircle } from 'lucide-react'
 import { format } from 'date-fns'
 
 interface AddFundModalProps {
@@ -11,6 +11,7 @@ interface AddFundModalProps {
   onClose: () => void
   clients: Client[]
   initialClientId?: string | null
+  clientUnusedMap?: Record<string, number>
   onSuccess?: () => void
   onSubmit: (payload: {
     client_id: string
@@ -28,6 +29,7 @@ export const AddFundModal: React.FC<AddFundModalProps> = ({
   onClose,
   clients,
   initialClientId,
+  clientUnusedMap = {},
   onSubmit,
 }) => {
   const [clientId, setClientId] = useState<string>('')
@@ -137,10 +139,16 @@ export const AddFundModal: React.FC<AddFundModalProps> = ({
             </select>
           </div>
           {selectedClient && (
-            <p className="text-[11px] text-slate-500 mt-1">
-              Contact: {selectedClient.contact_person || 'N/A'} • Status:{' '}
-              <span className="capitalize font-medium text-slate-700">{selectedClient.ad_fund_status || 'active'}</span>
-            </p>
+            <div className="flex flex-wrap items-center justify-between gap-1 text-[11px] text-slate-500 mt-1.5">
+              <span>
+                Contact: {selectedClient.contact_person || 'N/A'} • Status:{' '}
+                <span className="capitalize font-medium text-slate-700">{selectedClient.ad_fund_status || 'active'}</span>
+              </span>
+              <span className="font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 inline-flex items-center gap-1">
+                <Coins className="w-3 h-3 text-indigo-600" />
+                All Un-used Fund: ₹{(clientUnusedMap[clientId] || 0).toLocaleString('en-IN')}
+              </span>
+            </div>
           )}
         </div>
 
@@ -240,11 +248,11 @@ export const AddFundModal: React.FC<AddFundModalProps> = ({
             Who Paid the Ad Fund? <span className="text-rose-500">*</span>
           </label>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {/* Company Option */}
             <label
               onClick={() => setPaymentType('company')}
-              className={`relative flex items-center gap-2.5 p-3 rounded-lg border cursor-pointer select-none transition-all ${
+              className={`relative flex items-center gap-2 p-2.5 rounded-lg border cursor-pointer select-none transition-all ${
                 paymentType === 'company'
                   ? 'border-brand-600 bg-brand-50/50 shadow-sm ring-1 ring-brand-500'
                   : 'border-slate-200 bg-white hover:border-slate-300'
@@ -267,11 +275,11 @@ export const AddFundModal: React.FC<AddFundModalProps> = ({
               >
                 <Building2 className="w-3.5 h-3.5" />
               </div>
-              <div>
-                <span className="block text-xs font-bold text-slate-900">
+              <div className="min-w-0">
+                <span className="block text-xs font-bold text-slate-900 truncate">
                   Company
                 </span>
-                <span className="block text-[10px] text-slate-500 leading-tight">
+                <span className="block text-[10px] text-slate-500 truncate leading-tight">
                   Agency account
                 </span>
               </div>
@@ -280,7 +288,7 @@ export const AddFundModal: React.FC<AddFundModalProps> = ({
             {/* Personal Option */}
             <label
               onClick={() => setPaymentType('personal')}
-              className={`relative flex items-center gap-2.5 p-3 rounded-lg border cursor-pointer select-none transition-all ${
+              className={`relative flex items-center gap-2 p-2.5 rounded-lg border cursor-pointer select-none transition-all ${
                 paymentType === 'personal'
                   ? 'border-brand-600 bg-brand-50/50 shadow-sm ring-1 ring-brand-500'
                   : 'border-slate-200 bg-white hover:border-slate-300'
@@ -303,11 +311,11 @@ export const AddFundModal: React.FC<AddFundModalProps> = ({
               >
                 <User className="w-3.5 h-3.5" />
               </div>
-              <div>
-                <span className="block text-xs font-bold text-slate-900">
+              <div className="min-w-0">
+                <span className="block text-xs font-bold text-slate-900 truncate">
                   Personal
                 </span>
-                <span className="block text-[10px] text-slate-500 leading-tight">
+                <span className="block text-[10px] text-slate-500 truncate leading-tight">
                   By staff/director
                 </span>
               </div>
@@ -316,7 +324,7 @@ export const AddFundModal: React.FC<AddFundModalProps> = ({
             {/* Client Option */}
             <label
               onClick={() => setPaymentType('client')}
-              className={`relative flex items-center gap-2.5 p-3 rounded-lg border cursor-pointer select-none transition-all ${
+              className={`relative flex items-center gap-2 p-2.5 rounded-lg border cursor-pointer select-none transition-all ${
                 paymentType === 'client'
                   ? 'border-brand-600 bg-brand-50/50 shadow-sm ring-1 ring-brand-500'
                   : 'border-slate-200 bg-white hover:border-slate-300'
@@ -339,16 +347,75 @@ export const AddFundModal: React.FC<AddFundModalProps> = ({
               >
                 <Briefcase className="w-3.5 h-3.5" />
               </div>
-              <div>
-                <span className="block text-xs font-bold text-slate-900">
+              <div className="min-w-0">
+                <span className="block text-xs font-bold text-slate-900 truncate">
                   Client
                 </span>
-                <span className="block text-[10px] text-slate-500 leading-tight">
+                <span className="block text-[10px] text-slate-500 truncate leading-tight">
                   Direct by client
                 </span>
               </div>
             </label>
+
+            {/* Unused Fund Option */}
+            <label
+              onClick={() => setPaymentType('unused_fund')}
+              className={`relative flex items-center gap-2 p-2.5 rounded-lg border cursor-pointer select-none transition-all ${
+                paymentType === 'unused_fund'
+                  ? 'border-indigo-600 bg-indigo-50/70 shadow-sm ring-1 ring-indigo-500'
+                  : 'border-slate-200 bg-white hover:border-slate-300'
+              }`}
+            >
+              <input
+                type="radio"
+                name="paymentType"
+                value="unused_fund"
+                checked={paymentType === 'unused_fund'}
+                onChange={() => setPaymentType('unused_fund')}
+                className="sr-only"
+              />
+              <div
+                className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+                  paymentType === 'unused_fund'
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-slate-100 text-slate-500'
+                }`}
+              >
+                <Coins className="w-3.5 h-3.5" />
+              </div>
+              <div className="min-w-0">
+                <span className="block text-xs font-bold text-slate-900 truncate">
+                  All Un-used Fund
+                </span>
+                <span className="block text-[10px] text-indigo-600 font-semibold truncate leading-tight">
+                  ₹{(clientUnusedMap[clientId] || 0).toLocaleString('en-IN')} left
+                </span>
+              </div>
+            </label>
           </div>
+
+          {/* Unused Fund Info Banner */}
+          {paymentType === 'unused_fund' && (
+            <div className="pt-1">
+              <div className="p-3 rounded-lg bg-indigo-50/80 border border-indigo-200 text-xs text-indigo-950 flex items-start gap-2.5">
+                <Coins className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
+                <div className="space-y-0.5">
+                  <p className="font-semibold text-indigo-950">
+                    Deducting from All Un-used Fund
+                  </p>
+                  <p className="text-[11px] text-indigo-700">
+                    Available balance across previous periods: <strong className="font-bold">₹{(clientUnusedMap[clientId] || 0).toLocaleString('en-IN')}</strong>. This upload will reduce the client&apos;s Original Ad Fund balance.
+                  </p>
+                  {Number(amount || 0) > (clientUnusedMap[clientId] || 0) && (
+                    <p className="text-[11px] text-rose-600 font-semibold flex items-center gap-1 pt-1">
+                      <AlertCircle className="w-3 h-3 shrink-0" />
+                      Notice: Upload amount (₹{Number(amount || 0).toLocaleString('en-IN')}) exceeds available un-used fund (₹{(clientUnusedMap[clientId] || 0).toLocaleString('en-IN')}).
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Conditional Input: If Personal, enter the name of the person */}
           {paymentType === 'personal' && (
