@@ -147,14 +147,14 @@ export const WorkDetailsModal: React.FC<WorkDetailsModalProps> = ({
           <div className="p-3.5 rounded-xl border border-slate-200/80 bg-white">
             <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 mb-1.5">
               <Calendar className="w-3.5 h-3.5 text-slate-400" />
-              <span>Due Date</span>
+              <span>Timeline Dates</span>
             </span>
             <p className={`text-sm font-semibold ${isOverdue ? 'text-rose-600' : 'text-slate-900'}`}>
-              {formatDate(workItem.due_date, 'MMMM dd, yyyy')}
+              Due: {formatDate(workItem.due_date, 'MMMM dd, yyyy')}
             </p>
-            {workItem.created_at && (
-              <p className="text-[11px] text-slate-400 mt-0.5">
-                Assigned on {formatDate(workItem.created_at, 'MMM dd, yyyy')}
+            {workItem.start_date && (
+              <p className="text-[11px] font-medium text-brand-600 mt-0.5">
+                Work starts: {formatDate(workItem.start_date, 'MMMM dd, yyyy')}
               </p>
             )}
           </div>

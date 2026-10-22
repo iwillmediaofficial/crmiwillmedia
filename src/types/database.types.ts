@@ -301,6 +301,7 @@ export type Database = {
           ad_platforms: string[]
           ad_fund_status: string
           is_dm_client: boolean
+          dm_auto_assign_recurring: boolean
         }
         Insert: {
           address?: string | null
@@ -320,6 +321,7 @@ export type Database = {
           ad_platforms?: string[]
           ad_fund_status?: string
           is_dm_client?: boolean
+          dm_auto_assign_recurring?: boolean
         }
         Update: {
           address?: string | null
@@ -339,6 +341,7 @@ export type Database = {
           ad_platforms?: string[]
           ad_fund_status?: string
           is_dm_client?: boolean
+          dm_auto_assign_recurring?: boolean
         }
         Relationships: [
           {
@@ -572,8 +575,71 @@ export type Database = {
           },
         ]
       }
+      dm_client_deliverable_plans: {
+        Row: {
+          assigned_staff_ids: string[]
+          client_id: string
+          created_at: string
+          default_staff_id: string | null
+          deliverable_type: string
+          id: string
+          is_active: boolean
+          monthly_count: number
+          preferred_days: number[]
+          start_lead_days: number
+          title_template: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_staff_ids?: string[]
+          client_id: string
+          created_at?: string
+          default_staff_id?: string | null
+          deliverable_type: string
+          id?: string
+          is_active?: boolean
+          monthly_count?: number
+          preferred_days?: number[]
+          start_lead_days?: number
+          title_template: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_staff_ids?: string[]
+          client_id?: string
+          created_at?: string
+          default_staff_id?: string | null
+          deliverable_type?: string
+          id?: string
+          is_active?: boolean
+          monthly_count?: number
+          preferred_days?: number[]
+          start_lead_days?: number
+          title_template?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dm_client_deliverable_plans_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dm_client_deliverable_plans_default_staff_id_fkey"
+            columns: ["default_staff_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       work_items: {
         Row: {
+          start_date: string
+          deliverable_type: string
+          dm_plan_id: string | null
           assigned_date: string
           assigned_staff_id: string
           billing_status: string
@@ -596,6 +662,9 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          start_date?: string
+          deliverable_type?: string
+          dm_plan_id?: string | null
           assigned_date?: string
           assigned_staff_id: string
           billing_status?: string
@@ -618,6 +687,9 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          start_date?: string
+          deliverable_type?: string
+          dm_plan_id?: string | null
           assigned_date?: string
           assigned_staff_id?: string
           billing_status?: string
@@ -919,3 +991,8 @@ export type AdFundPaymentType = 'company' | 'personal' | 'client' | 'unused_fund
 export type AdFundStatus = 'active' | 'paused' | 'pending' | 'low_fund'
 
 
+
+export type DMClientDeliverablePlan = Database['public']['Tables']['dm_client_deliverable_plans']['Row']
+export type DMClientDeliverablePlanInsert = Database['public']['Tables']['dm_client_deliverable_plans']['Insert']
+export type DMClientDeliverablePlanUpdate = Database['public']['Tables']['dm_client_deliverable_plans']['Update']
+export type DeliverableType = 'poster' | 'video' | 'reel' | 'carousel' | 'story' | 'other' | 'general'

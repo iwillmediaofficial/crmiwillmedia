@@ -18,6 +18,7 @@ const WorkPage = lazy(() => import('./features/work/pages/WorkPage').then(m => (
 const ClientsPage = lazy(() => import('./features/clients/pages/ClientsPage').then(m => ({ default: m.ClientsPage })))
 const BillingPage = lazy(() => import('./features/billing/pages/BillingPage').then(m => ({ default: m.BillingPage })))
 const BillingCalendarPage = lazy(() => import('./features/calendar/pages/BillingCalendarPage').then(m => ({ default: m.BillingCalendarPage })))
+const DMWorkCalendarPage = lazy(() => import('./features/calendar/pages/DMWorkCalendarPage').then(m => ({ default: m.DMWorkCalendarPage })))
 const AdFundPage = lazy(() => import('./features/ad-funds/pages/AdFundPage').then(m => ({ default: m.AdFundPage })))
 const StaffPage = lazy(() => import('./features/staff/pages/StaffPage').then(m => ({ default: m.StaffPage })))
 const SettingsPage = lazy(() => import('./features/settings/pages/SettingsPage').then(m => ({ default: m.SettingsPage })))
@@ -58,6 +59,8 @@ export function App() {
                   <Route path="/clients" element={<ClientsPage />} />
                   <Route path="/billing" element={<BillingPage />} />
                   <Route path="/calendar" element={<BillingCalendarPage />} />
+                  <Route path="/dm-calendar" element={<DMWorkCalendarPage />} />
+                  <Route path="/calendar/dm" element={<Navigate to="/dm-calendar" replace />} />
 
                   {/* Admin Only Routes */}
                   <Route element={<ProtectedRoute requiredRole="admin" />}>

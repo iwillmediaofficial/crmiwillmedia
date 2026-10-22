@@ -179,14 +179,21 @@ export const WorkTableView: React.FC<WorkTableViewProps> = ({
                 </td>
 
                 <td className="py-3.5 px-4">
-                  <span
-                    className={`flex items-center gap-1.5 ${
-                      isOverdue ? 'text-rose-600 font-bold' : 'text-slate-600'
-                    }`}
-                  >
-                    <Calendar className="w-3.5 h-3.5" />
-                    <span>{formatDate(item.due_date, 'MMM dd')}</span>
-                  </span>
+                  <div className="space-y-0.5">
+                    <span
+                      className={`flex items-center gap-1.5 ${
+                        isOverdue ? 'text-rose-600 font-bold' : 'text-slate-800 font-medium'
+                      }`}
+                    >
+                      <Calendar className="w-3.5 h-3.5" />
+                      <span>{formatDate(item.due_date, 'MMM dd')}</span>
+                    </span>
+                    {item.start_date && (
+                      <span className="text-[10px] text-slate-400 block pl-5">
+                        Start: {formatDate(item.start_date, 'MMM dd')}
+                      </span>
+                    )}
+                  </div>
                 </td>
 
                 <td className="py-3.5 px-4 text-right">

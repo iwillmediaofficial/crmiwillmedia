@@ -16,7 +16,9 @@ const workItemSchema = z.object({
   client_id: z.string().min(1, 'Client selection is required'),
   description: z.string().optional(),
   assigned_staff_id: z.string().min(1, 'Staff assignment is required'),
+  start_date: z.string().optional(),
   due_date: z.string().min(1, 'Due date is required'),
+  deliverable_type: z.string().optional(),
   priority: z.string().min(1, 'Priority is required'),
   status: z.string().min(1, 'Status is required'),
   billing_status: z.string().min(1, 'Billing status is required'),
@@ -88,7 +90,9 @@ export const WorkItemModal: React.FC<WorkItemModalProps> = ({
       client_id: '',
       description: '',
       assigned_staff_id: '',
+      start_date: new Date().toISOString().split('T')[0],
       due_date: '',
+      deliverable_type: 'general',
       priority: 'normal',
       status: 'assigned',
       billing_status: 'unbilled',
@@ -108,7 +112,9 @@ export const WorkItemModal: React.FC<WorkItemModalProps> = ({
         client_id: initialWorkItem.client_id,
         description: initialWorkItem.description || '',
         assigned_staff_id: initialWorkItem.assigned_staff_id,
+        start_date: initialWorkItem.start_date || initialWorkItem.assigned_date,
         due_date: initialWorkItem.due_date,
+        deliverable_type: initialWorkItem.deliverable_type || 'general',
         priority: initialWorkItem.priority,
         status: initialWorkItem.status,
         billing_status: initialWorkItem.billing_status,
@@ -123,7 +129,9 @@ export const WorkItemModal: React.FC<WorkItemModalProps> = ({
         client_id: '',
         description: '',
         assigned_staff_id: '',
+        start_date: new Date().toISOString().split('T')[0],
         due_date: '',
+        deliverable_type: 'general',
         priority: 'normal',
         status: 'assigned',
         billing_status: 'unbilled',
@@ -217,13 +225,38 @@ export const WorkItemModal: React.FC<WorkItemModalProps> = ({
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <Input
+            label="Work Starting Date"
+            type="date"
+            error={errors.start_date?.message}
+            {...register('start_date')}
+          />
+
           <Input
             label="Due Date"
             type="date"
             error={errors.due_date?.message}
             {...register('due_date')}
           />
+
+          <div className="space-y-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600">
+              Deliverable Type
+            </label>
+            <select
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+              {...register('deliverable_type')}
+            >
+              <option value="general">General Deliverable</option>
+              <option value="poster">Poster</option>
+              <option value="video">Promo Video</option>
+              <option value="reel">Reel / Short</option>
+              <option value="carousel">Carousel Post</option>
+              <option value="story">Story</option>
+              <option value="other">Other Deliverable</option>
+            </select>
+          </div>
 
           <div className="space-y-1.5">
             <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600">

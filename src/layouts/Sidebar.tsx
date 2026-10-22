@@ -8,6 +8,7 @@ import {
   Receipt,
   Wallet,
   CalendarDays,
+  CalendarCheck2,
   UserCheck,
   Settings,
   LogOut,
@@ -40,6 +41,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     ...(isAdmin
       ? [{ label: 'Ad Fund', path: '/ad-funds', icon: Wallet }]
       : []),
+    { label: 'DM Work Calendar', path: '/dm-calendar', icon: CalendarCheck2 },
     { label: 'Billing Calendar', path: '/calendar', icon: CalendarDays },
     ...(isAdmin
       ? [
@@ -80,6 +82,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               <NavLink
                 key={item.path}
                 to={item.path}
+                end
                 onClick={onClose}
                 className={({ isActive }) =>
                   cn(

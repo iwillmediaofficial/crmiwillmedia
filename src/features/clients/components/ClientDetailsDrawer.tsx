@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   X,
   Building2,
@@ -10,6 +11,7 @@ import {
   Receipt,
   Repeat,
   Calendar,
+  CalendarCheck2,
 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
@@ -28,6 +30,7 @@ export const ClientDetailsDrawer: React.FC<ClientDetailsDrawerProps> = ({
   isOpen,
   onClose,
 }) => {
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<'overview' | 'work' | 'billing' | 'recurring'>('overview')
 
   // Fetch client's linked work items
@@ -101,6 +104,11 @@ export const ClientDetailsDrawer: React.FC<ClientDetailsDrawerProps> = ({
                   <Badge variant={client.status === 'active' ? 'success' : 'default'} size="sm">
                     {client.status}
                   </Badge>
+                  {client.is_dm_client && (
+                    <Badge variant="default" size="sm" className="bg-purple-100 text-purple-700 border-purple-200">
+                      DM Client
+                    </Badge>
+                  )}
                   <span className="text-xs text-slate-500">Contact: {client.contact_person}</span>
                 </div>
               </div>
@@ -145,6 +153,33 @@ export const ClientDetailsDrawer: React.FC<ClientDetailsDrawerProps> = ({
           <div className="p-6 overflow-y-auto flex-1 space-y-6">
             {activeTab === 'overview' && (
               <div className="space-y-5 text-xs">
+                {client.is_dm_client && (
+                  <div className="p-4 rounded-xl bg-purple-50/70 border border-purple-200 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-purple-900 flex items-center gap-1.5">
+                        <CalendarCheck2 className="w-4 h-4 text-purple-700" />
+                        <span>Digital Marketing Client</span>
+                      </span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-200 text-purple-800">
+                        Monthly Recurring
+                      </span>
+                    </div>
+                    <p className="text-xs text-purple-700">
+                      Manage monthly recurring deliverables (posters & videos), lead times, and auto-assign schedules.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onClose()
+                        navigate('/dm-calendar')
+                      }}
+                      className="mt-1 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs shadow-xs transition-colors"
+                    >
+                      <CalendarCheck2 className="w-3.5 h-3.5" />
+                      <span>Open DM Work Calendar</span>
+                    </button>
+                  </div>
+                )}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
                     <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block mb-1">
