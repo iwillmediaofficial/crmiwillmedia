@@ -45,7 +45,7 @@ export const WorkItemModal: React.FC<WorkItemModalProps> = ({
   onSubmit,
   onDelete,
 }) => {
-  const { isAdmin } = useAuth()
+  const { isAdmin, user } = useAuth()
 
   // Fetch active clients
   const { data: clients } = useQuery({
@@ -89,7 +89,7 @@ export const WorkItemModal: React.FC<WorkItemModalProps> = ({
       title: '',
       client_id: '',
       description: '',
-      assigned_staff_id: '',
+      assigned_staff_id: !isAdmin ? (user?.id || '') : '',
       start_date: new Date().toISOString().split('T')[0],
       due_date: '',
       deliverable_type: 'general',
@@ -128,7 +128,7 @@ export const WorkItemModal: React.FC<WorkItemModalProps> = ({
         title: '',
         client_id: '',
         description: '',
-        assigned_staff_id: '',
+        assigned_staff_id: !isAdmin ? (user?.id || '') : '',
         start_date: new Date().toISOString().split('T')[0],
         due_date: '',
         deliverable_type: 'general',
@@ -141,11 +141,12 @@ export const WorkItemModal: React.FC<WorkItemModalProps> = ({
         remarks: '',
       })
     }
-  }, [initialWorkItem, reset, isOpen])
+  }, [initialWorkItem, reset, isOpen, isAdmin, user?.id])
 
   const handleFormSubmit = async (values: WorkItemFormValues) => {
     await onSubmit({
       ...values,
+      assigned_staff_id: !isAdmin ? (user?.id || values.assigned_staff_id) : values.assigned_staff_id,
       billable_amount: values.is_billable ? (values.billable_amount || 0) : 0,
       currency: values.is_billable ? (values.currency || 'INR') : 'INR',
       description: values.description || null,
@@ -154,12 +155,20 @@ export const WorkItemModal: React.FC<WorkItemModalProps> = ({
     onClose()
   }
 
+  const modalTitle = initialWorkItem
+    ? (initialWorkItem.created_by === user?.id && !isAdmin ? 'Edit Self-Assigned Task' : 'Edit Work Item')
+    : (!isAdmin ? 'Self Assign Task' : 'Assign New Work')
+
+  const modalDescription = !isAdmin
+    ? 'Define task deliverables, client context, billing, and deadlines assigned to yourself.'
+    : 'Define task deliverables, client context, assignee, and completion deadlines.'
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={initialWorkItem ? 'Edit Work Item' : 'Assign New Work'}
-      description="Define task deliverables, client context, assignee, and completion deadlines."
+      title={modalTitle}
+      description={modalDescription}
       maxWidth="lg"
     >
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
@@ -196,17 +205,22 @@ export const WorkItemModal: React.FC<WorkItemModalProps> = ({
               Assigned Staff
             </label>
             <select
-              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
-              disabled={!isAdmin && !!initialWorkItem}
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed"
+              disabled={!isAdmin}
               {...register('assigned_staff_id')}
             >
-              <option value="">Select Assignee</option>
+              {isAdmin && <option value="">Select Assignee</option>}
               {staffList?.map((s) => (
                 <option key={s.id} value={s.id}>
-                  {s.full_name} ({s.designation || 'Staff'})
+                  {s.full_name} ({s.designation || 'Staff'}) {s.id === user?.id ? '(You)' : ''}
                 </option>
               ))}
             </select>
+            {!isAdmin && (
+              <p className="text-[11px] text-brand-600 font-medium">
+                Self-assignment: This deliverable is assigned to you.
+              </p>
+            )}
             {errors.assigned_staff_id && (
               <p className="text-xs text-rose-600">{errors.assigned_staff_id.message}</p>
             )}
@@ -342,7 +356,6 @@ export const WorkItemModal: React.FC<WorkItemModalProps> = ({
             </label>
             <select
               className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
-              disabled={!isAdmin}
               {...register('billing_status')}
             >
               <option value="unbilled">Unbilled</option>
@@ -359,7 +372,7 @@ export const WorkItemModal: React.FC<WorkItemModalProps> = ({
 
         <div className="flex items-center justify-between gap-3 pt-3 border-t border-slate-100">
           <div>
-            {initialWorkItem && isAdmin && onDelete && (
+            {initialWorkItem && (isAdmin || initialWorkItem.created_by === user?.id) && onDelete && (
               <Button
                 type="button"
                 variant="outline"
@@ -379,7 +392,7 @@ export const WorkItemModal: React.FC<WorkItemModalProps> = ({
               Cancel
             </Button>
             <Button type="submit" isLoading={isSubmitting}>
-              {initialWorkItem ? 'Save Changes' : 'Assign Work'}
+              {initialWorkItem ? 'Save Changes' : (!isAdmin ? 'Create Task' : 'Assign Work')}
             </Button>
           </div>
         </div>

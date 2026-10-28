@@ -10,12 +10,11 @@ import {
   RotateCcw,
   ChevronDown,
   Eye,
-  Trash2,
+  User,
 } from 'lucide-react'
 import { Card, CardHeader, CardContent } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
-import { formatCurrency, formatDate, formatTimeSeconds } from '@/lib/formatters'
-import { WorkItem } from '@/types/database.types'
+import { formatDate, formatTimeSeconds } from '@/lib/formatters'
 import { useTimer } from '@/features/timer/hooks/useTimer'
 import { useAuth } from '@/features/auth/AuthContext'
 import { StaffActiveTimer } from '@/features/timer/hooks/useAdminActiveTimers'
@@ -268,6 +267,12 @@ const StaffCardSection: React.FC<StaffCardProps> = ({
               const isOverdue =
                 new Date(item.due_date) < new Date() && item.status !== 'completed'
 
+              const isSelfAssigned = Boolean(item.created_by && item.created_by === item.assigned_staff_id)
+              const canEditItem = isAdmin || Boolean(user?.id && item.created_by === user.id)
+              const canDeleteItem = isAdmin || Boolean(user?.id && item.created_by === user.id)
+              const creatorName = item.creator?.full_name
+              const creatorRole = item.creator?.role
+
               return (
                 <div
                   key={item.id}
@@ -303,20 +308,35 @@ const StaffCardSection: React.FC<StaffCardProps> = ({
                         >
                           {item.priority}
                         </Badge>
+
+                        {isSelfAssigned ? (
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-700 border border-slate-200">
+                            <User className="w-2.5 h-2.5 text-slate-500" />
+                            <span>Self-Assigned</span>
+                          </span>
+                        ) : item.creator ? (
+                          <span
+                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-violet-50 text-violet-700 border border-violet-200"
+                            title={`Assigned by ${creatorName || 'Manager'} (${creatorRole || 'admin'})`}
+                          >
+                            <span>Assigned by {creatorRole ? `${creatorRole.charAt(0).toUpperCase() + creatorRole.slice(1)}` : 'Admin'}{creatorName ? ` (${creatorName})` : ''}</span>
+                          </span>
+                        ) : null}
+
                         {item.is_billable && (
                           <span
-                            className={`inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-semibold border ${
+                            className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold border ${
                               item.billing_status === 'billed'
                                 ? 'bg-blue-50 text-blue-700 border-blue-200'
                                 : 'bg-emerald-50 text-emerald-700 border-emerald-200'
                             }`}
-                            title={
-                              isAdmin && item.billable_amount
-                                ? `Billable: ${item.currency || 'INR'} ${item.billable_amount}`
-                                : 'Billable'
-                            }
                           >
-                            {item.billing_status === 'billed' ? 'Billed' : 'Billable'}
+                            <span>{item.billing_status === 'billed' ? 'Billed' : 'Billable'}</span>
+                            {item.billable_amount ? (
+                              <span className="font-bold">
+                                ({item.currency || 'INR'} {Number(item.billable_amount).toLocaleString()})
+                              </span>
+                            ) : null}
                           </span>
                         )}
                       </div>
@@ -445,7 +465,7 @@ const StaffCardSection: React.FC<StaffCardProps> = ({
                         <span>View Task</span>
                       </button>
 
-                      {isAdmin && (
+                      {canEditItem && (
                         <button
                           type="button"
                           onClick={() => onOpenEdit(item)}
@@ -454,7 +474,7 @@ const StaffCardSection: React.FC<StaffCardProps> = ({
                           Edit
                         </button>
                       )}
-                      {isAdmin && onDelete && (
+                      {canDeleteItem && onDelete && (
                         <button
                           type="button"
                           onClick={() => onDelete(item.id, item.title)}

@@ -10,5 +10,6 @@ export interface AuthState {
   profile: Profile | null
   isLoading: boolean
   isAdmin: boolean
+  canSelfAssignTasks: boolean
   role: UserRole
 }

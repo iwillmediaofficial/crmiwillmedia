@@ -127,13 +127,24 @@ export const StaffPage: React.FC = () => {
                     </td>
 
                     <td className="py-3.5 px-4">
-                      <Badge
-                        variant={staff.role === 'admin' ? 'purple' : 'neutral'}
-                        size="sm"
-                        className="capitalize font-semibold"
-                      >
-                        {staff.role}
-                      </Badge>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <Badge
+                          variant={staff.role === 'admin' ? 'purple' : 'neutral'}
+                          size="sm"
+                          className="capitalize font-semibold"
+                        >
+                          {staff.role}
+                        </Badge>
+                        {staff.role !== 'admin' && (
+                          <Badge
+                            variant={staff.can_self_assign_tasks ? 'success' : 'neutral'}
+                            size="sm"
+                            className="text-[10px]"
+                          >
+                            {staff.can_self_assign_tasks ? 'Self-Assign' : 'No Self-Assign'}
+                          </Badge>
+                        )}
+                      </div>
                     </td>
 
                     <td className="py-3.5 px-4">
@@ -203,6 +214,7 @@ export const StaffPage: React.FC = () => {
                 department: payload.department || null,
                 designation: payload.designation || null,
                 role: payload.role,
+                can_self_assign_tasks: payload.can_self_assign_tasks,
               },
             })
           } else {

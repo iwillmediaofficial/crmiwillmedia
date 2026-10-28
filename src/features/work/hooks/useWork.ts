@@ -35,6 +35,12 @@ export function useWork(filters: WorkFilterParams = {}) {
             designation,
             avatar_url
           ),
+          creator:profiles!work_items_created_by_fkey (
+            id,
+            full_name,
+            role,
+            designation
+          ),
           work_time_entries (
             id,
             duration_seconds,

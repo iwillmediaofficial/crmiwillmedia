@@ -32,9 +32,12 @@ export const WorkDetailsModal: React.FC<WorkDetailsModalProps> = ({
   workItem,
   onDelete,
 }) => {
-  const { isAdmin } = useAuth()
+  const { isAdmin, user } = useAuth()
 
   if (!workItem) return null
+
+  const isSelfAssigned = Boolean(workItem.created_by && workItem.created_by === workItem.assigned_staff_id)
+  const canDeleteItem = isAdmin || Boolean(user?.id && workItem.created_by === user.id)
 
   const isOverdue =
     new Date(workItem.due_date) < new Date() && workItem.status !== 'completed'
@@ -177,6 +180,36 @@ export const WorkDetailsModal: React.FC<WorkDetailsModalProps> = ({
               <p className="text-[11px] text-slate-400 mt-0.5">Total duration accumulated</p>
             )}
           </div>
+
+          {/* Assigned By Attribution */}
+          <div className="p-3.5 rounded-xl border border-slate-200/80 bg-white">
+            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 mb-1.5">
+              <User className="w-3.5 h-3.5 text-slate-400" />
+              <span>Assigned By</span>
+            </span>
+            {isSelfAssigned ? (
+              <div>
+                <p className="text-sm font-semibold text-brand-700 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-brand-500 inline-block" />
+                  <span>Self-Assigned</span>
+                </p>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Created by {workItem.profiles?.full_name || 'assignee'}
+                </p>
+              </div>
+            ) : workItem.creator ? (
+              <div>
+                <p className="text-sm font-semibold text-slate-900">
+                  {workItem.creator.full_name}
+                </p>
+                <p className="text-[11px] text-slate-500 capitalize">
+                  {workItem.creator.role || 'Staff'} {workItem.creator.designation ? `• ${workItem.creator.designation}` : ''}
+                </p>
+              </div>
+            ) : (
+              <p className="text-sm font-medium text-slate-700">Administrator</p>
+            )}
+          </div>
         </div>
 
         {/* Hold / Blocker Section (if pending) */}
@@ -225,12 +258,12 @@ export const WorkDetailsModal: React.FC<WorkDetailsModalProps> = ({
           </div>
         </div>
 
-        {/* Billing Information — STRICTLY ADMIN ONLY (hidden for staff) */}
-        {isAdmin && workItem.is_billable && (
+        {/* Billing Information */}
+        {workItem.is_billable && (
           <div className="p-3.5 rounded-xl bg-violet-50/60 border border-violet-200/80 space-y-1">
             <span className="text-[11px] font-semibold text-violet-800 uppercase tracking-wider flex items-center gap-1.5">
               <DollarSign className="w-3.5 h-3.5 text-violet-600" />
-              <span>Billing Details (Admin Only)</span>
+              <span>Billing Details</span>
             </span>
             <div className="flex items-center justify-between text-xs pt-1">
               <span className="text-slate-600">Billable Amount:</span>
@@ -250,7 +283,7 @@ export const WorkDetailsModal: React.FC<WorkDetailsModalProps> = ({
         {/* Modal Footer */}
         <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
           <div>
-            {isAdmin && onDelete && (
+            {canDeleteItem && onDelete && (
               <button
                 type="button"
                 onClick={() => {

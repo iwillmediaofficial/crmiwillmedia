@@ -5,8 +5,6 @@ import {
   Search,
   LayoutGrid,
   List,
-  Filter,
-  Calendar,
 } from 'lucide-react'
 import { useWork, WorkFilterParams } from '../hooks/useWork'
 import { WorkItemModal } from '../components/WorkItemModal'
@@ -22,7 +20,7 @@ import { Card } from '@/components/ui/Card'
 import { WorkItem } from '@/types/database.types'
 
 export const WorkPage: React.FC = () => {
-  const { isAdmin } = useAuth()
+  const { isAdmin, user, canSelfAssignTasks } = useAuth()
   const { activeTimers, activeTimersByStaffId, activeTimersByWorkItemId } = useAdminActiveTimers()
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards')
   const [filters, setFilters] = useState<WorkFilterParams>({
@@ -58,7 +56,7 @@ export const WorkPage: React.FC = () => {
   }
 
   const handleOpenEdit = (item: WorkItem) => {
-    if (!isAdmin) return
+    if (!isAdmin && item.created_by !== user?.id) return
     setEditingItem(item)
     setIsWorkModalOpen(true)
   }
@@ -80,7 +78,8 @@ export const WorkPage: React.FC = () => {
   }
 
   const handleDelete = async (id: string, title: string) => {
-    if (!isAdmin) return
+    const item = workItems.find((w) => w.id === id)
+    if (!isAdmin && item?.created_by !== user?.id) return
     if (confirm(`Are you sure you want to delete task "${title}"?`)) {
       await deleteWorkItem(id)
     }
@@ -127,10 +126,10 @@ export const WorkPage: React.FC = () => {
             </button>
           </div>
 
-          {isAdmin && (
+          {(isAdmin || canSelfAssignTasks) && (
             <Button onClick={handleOpenAdd} className="shadow-sm">
               <Plus className="w-4 h-4 mr-1.5" />
-              <span>Assign Work</span>
+              <span>{isAdmin ? 'Assign Work' : 'Self Assign Task'}</span>
             </Button>
           )}
         </div>
@@ -208,10 +207,10 @@ export const WorkPage: React.FC = () => {
           <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
             There are no deliverables matching your filter criteria.
           </p>
-          {isAdmin && (
+          {(isAdmin || canSelfAssignTasks) && (
             <Button onClick={handleOpenAdd} size="sm" variant="outline" className="mt-4">
               <Plus className="w-3.5 h-3.5 mr-1" />
-              <span>Assign Work Item</span>
+              <span>{isAdmin ? 'Assign Work Item' : 'Self Assign Task'}</span>
             </Button>
           )}
         </Card>
@@ -223,7 +222,7 @@ export const WorkPage: React.FC = () => {
           onOpenPending={handleOpenPending}
           onResumeWork={handleResumeWork}
           onMarkCompleted={markCompleted}
-          onDelete={isAdmin ? handleDelete : undefined}
+          onDelete={handleDelete}
           activeTimersByStaffId={activeTimersByStaffId}
         />
       ) : (
@@ -235,7 +234,7 @@ export const WorkPage: React.FC = () => {
             onOpenPending={handleOpenPending}
             onResumeWork={handleResumeWork}
             onMarkCompleted={markCompleted}
-            onDelete={isAdmin ? handleDelete : undefined}
+            onDelete={handleDelete}
             activeTimersByWorkItemId={activeTimersByWorkItemId}
           />
         </Card>
@@ -247,7 +246,7 @@ export const WorkPage: React.FC = () => {
           isOpen={Boolean(viewingItem)}
           onClose={() => setViewingItem(null)}
           workItem={viewingItem}
-          onDelete={isAdmin ? handleDelete : undefined}
+          onDelete={handleDelete}
         />
       )}
 
@@ -258,13 +257,13 @@ export const WorkPage: React.FC = () => {
         initialWorkItem={editingItem}
         onSubmit={async (payload) => {
           if (editingItem) {
-            if (!isAdmin) return
+            if (!isAdmin && editingItem.created_by !== user?.id) return
             await updateWorkItem({ id: editingItem.id, updates: payload })
           } else {
             await createWorkItem(payload)
           }
         }}
-        onDelete={isAdmin ? handleDelete : undefined}
+        onDelete={handleDelete}
       />
 
       {/* Mark Pending Modal */}

@@ -464,6 +464,7 @@ export type Database = {
         Row: {
           active: boolean
           avatar_url: string | null
+          can_self_assign_tasks: boolean
           created_at: string
           department: string | null
           designation: string | null
@@ -477,6 +478,7 @@ export type Database = {
         Insert: {
           active?: boolean
           avatar_url?: string | null
+          can_self_assign_tasks?: boolean
           created_at?: string
           department?: string | null
           designation?: string | null
@@ -490,6 +492,7 @@ export type Database = {
         Update: {
           active?: boolean
           avatar_url?: string | null
+          can_self_assign_tasks?: boolean
           created_at?: string
           department?: string | null
           designation?: string | null

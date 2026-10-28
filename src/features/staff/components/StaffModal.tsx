@@ -16,6 +16,7 @@ const staffSchema = z.object({
   department: z.string().min(1, 'Department is required'),
   designation: z.string().min(1, 'Designation is required'),
   role: z.string().min(1, 'Role is required'),
+  can_self_assign_tasks: z.boolean(),
 })
 
 type StaffFormValues = z.infer<typeof staffSchema>
@@ -50,6 +51,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
       department: 'Development',
       designation: '',
       role: 'staff',
+      can_self_assign_tasks: true,
     },
   })
 
@@ -63,6 +65,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
         department: initialStaff.department || 'Development',
         designation: initialStaff.designation || '',
         role: initialStaff.role,
+        can_self_assign_tasks: initialStaff.can_self_assign_tasks ?? true,
       })
     } else {
       reset({
@@ -73,6 +76,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
         department: 'Development',
         designation: '',
         role: 'staff',
+        can_self_assign_tasks: true,
       })
     }
   }, [initialStaff, reset, isOpen])
@@ -86,6 +90,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
       department: values.department,
       designation: values.designation,
       role: values.role,
+      can_self_assign_tasks: values.can_self_assign_tasks,
     })
     onClose()
   }
@@ -189,6 +194,25 @@ export const StaffModal: React.FC<StaffModalProps> = ({
             <option value="digital_marketing">Digital Marketing (Campaigns & Retainers)</option>
             <option value="accounts">Accounts (Invoicing & Billing)</option>
           </select>
+        </div>
+
+        {/* Permission Controls */}
+        <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5">
+          <label className="flex items-start gap-3 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              className="w-4 h-4 mt-0.5 rounded text-brand-600 border-slate-300 focus:ring-brand-500 cursor-pointer"
+              {...register('can_self_assign_tasks')}
+            />
+            <div>
+              <span className="text-xs font-bold text-slate-900 block">
+                Allow Self Task Assignment
+              </span>
+              <span className="text-[11px] text-slate-500 block leading-relaxed">
+                Permits this staff member to create and assign work deliverables to themselves.
+              </span>
+            </div>
+          </label>
         </div>
 
         <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">

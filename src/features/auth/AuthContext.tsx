@@ -107,6 +107,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const role = (profile?.role as UserRole) || 'staff'
   const isAdmin = role === 'admin'
+  const canSelfAssignTasks = isAdmin || (profile?.can_self_assign_tasks ?? true)
 
   return (
     <AuthContext.Provider
@@ -115,6 +116,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         profile,
         isLoading,
         isAdmin,
+        canSelfAssignTasks,
         role,
         signIn,
         signOut,

@@ -11,6 +11,7 @@ import {
   Edit2,
   Trash2,
   Eye,
+  User,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { formatDate, formatTimeSeconds } from '@/lib/formatters'
@@ -92,6 +93,12 @@ export const WorkTableView: React.FC<WorkTableViewProps> = ({
             const isOverdue =
               new Date(item.due_date) < new Date() && item.status !== 'completed'
 
+            const isSelfAssigned = Boolean(item.created_by && item.created_by === item.assigned_staff_id)
+            const canEditItem = isAdmin || Boolean(user?.id && item.created_by === user.id)
+            const canDeleteItem = isAdmin || Boolean(user?.id && item.created_by === user.id)
+            const creatorName = item.creator?.full_name
+            const creatorRole = item.creator?.role
+
             return (
               <tr
                 key={item.id}
@@ -111,18 +118,18 @@ export const WorkTableView: React.FC<WorkTableViewProps> = ({
                     </button>
                     {item.is_billable && (
                       <span
-                        className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold border ${
+                        className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold border ${
                           item.billing_status === 'billed'
                             ? 'bg-blue-50 text-blue-700 border-blue-200'
                             : 'bg-emerald-50 text-emerald-700 border-emerald-200'
                         }`}
-                        title={
-                          isAdmin && item.billable_amount
-                            ? `Billable: ${item.currency || 'INR'} ${item.billable_amount}`
-                            : 'Billable'
-                        }
                       >
-                        {item.billing_status === 'billed' ? 'Billed' : 'Billable'}
+                        <span>{item.billing_status === 'billed' ? 'Billed' : 'Billable'}</span>
+                        {item.billable_amount ? (
+                          <span className="font-bold">
+                            ({item.currency || 'INR'} {Number(item.billable_amount).toLocaleString()})
+                          </span>
+                        ) : null}
                       </span>
                     )}
                   </div>
@@ -147,12 +154,27 @@ export const WorkTableView: React.FC<WorkTableViewProps> = ({
 
                 <td className="py-3.5 px-4">
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-[10px]">
+                    <div className="w-6 h-6 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-[10px] shrink-0">
                       {item.profiles?.full_name ? item.profiles.full_name.slice(0, 2).toUpperCase() : 'IW'}
                     </div>
-                    <span className="font-medium text-slate-800">
-                      {item.profiles?.full_name || 'Unassigned'}
-                    </span>
+                    <div>
+                      <span className="font-medium text-slate-800 block">
+                        {item.profiles?.full_name || 'Unassigned'}
+                      </span>
+                      {isSelfAssigned ? (
+                        <span className="inline-flex items-center gap-0.5 text-[10px] text-brand-600 font-medium">
+                          <User className="w-2.5 h-2.5" />
+                          <span>Self-assigned</span>
+                        </span>
+                      ) : item.creator ? (
+                        <span
+                          className="text-[10px] text-slate-400 block"
+                          title={`Assigned by ${creatorName || 'Manager'} (${creatorRole || 'admin'})`}
+                        >
+                          By: {creatorRole ? `${creatorRole.charAt(0).toUpperCase() + creatorRole.slice(1)}` : 'Admin'}{creatorName ? ` (${creatorName})` : ''}
+                        </span>
+                      ) : null}
+                    </div>
                   </div>
                 </td>
 
@@ -267,7 +289,7 @@ export const WorkTableView: React.FC<WorkTableViewProps> = ({
                       <Eye className="w-3.5 h-3.5" />
                     </button>
 
-                    {isAdmin && (
+                    {canEditItem && (
                       <button
                         onClick={() => onOpenEdit(item)}
                         className="p-1.5 text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded-md transition-colors"
@@ -277,7 +299,7 @@ export const WorkTableView: React.FC<WorkTableViewProps> = ({
                       </button>
                     )}
 
-                    {isAdmin && onDelete && (
+                    {canDeleteItem && onDelete && (
                       <button
                         onClick={() => onDelete(item.id, item.title)}
                         className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors"

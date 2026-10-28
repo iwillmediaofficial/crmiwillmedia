@@ -11,6 +11,7 @@ export interface StaffFormPayload {
   department?: string
   designation?: string
   role: string
+  can_self_assign_tasks?: boolean
   active?: boolean
 }
 
@@ -45,6 +46,7 @@ export function useStaff() {
         p_department: payload.department || null,
         p_designation: payload.designation || null,
         p_phone: payload.phone || null,
+        p_can_self_assign_tasks: payload.can_self_assign_tasks ?? true,
       })
 
       if (error) throw error
