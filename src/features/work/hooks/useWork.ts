@@ -85,7 +85,7 @@ export function useWork(filters: WorkFilterParams = {}) {
       if (error) throw error
 
       // Compute total duration_seconds per work item
-      return (data || []).map((item: any) => {
+      const mapped = (data || []).map((item: any) => {
         const totalDuration = (item.work_time_entries || []).reduce(
           (sum: number, entry: any) => sum + (entry.duration_seconds || 0),
           0
@@ -98,6 +98,40 @@ export function useWork(filters: WorkFilterParams = {}) {
           totalDurationSeconds: totalDuration,
           hasActiveTimer,
         }
+      })
+
+      // Sort items intelligently:
+      // 1. Items with active timer first
+      // 2. Status priority: in_progress (1), assigned (2), pending (3), completed (4), cancelled (5)
+      // 3. For active items: due_date ascending, then created_at descending
+      // 4. For completed items: completed_at / updated_at descending
+      const statusWeight: Record<string, number> = {
+        in_progress: 1,
+        assigned: 2,
+        pending: 3,
+        completed: 4,
+        cancelled: 5,
+      }
+
+      return mapped.sort((a: any, b: any) => {
+        if (a.hasActiveTimer && !b.hasActiveTimer) return -1
+        if (!a.hasActiveTimer && b.hasActiveTimer) return 1
+
+        const weightA = statusWeight[a.status] || 99
+        const weightB = statusWeight[b.status] || 99
+        if (weightA !== weightB) return weightA - weightB
+
+        if (a.status === 'completed' || a.status === 'cancelled') {
+          const timeA = new Date(a.completed_at || a.updated_at || a.created_at).getTime()
+          const timeB = new Date(b.completed_at || b.updated_at || b.created_at).getTime()
+          return timeB - timeA
+        }
+
+        const dateA = a.due_date ? new Date(a.due_date).getTime() : Infinity
+        const dateB = b.due_date ? new Date(b.due_date).getTime() : Infinity
+        if (dateA !== dateB) return dateA - dateB
+
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       })
     },
     enabled: !!user?.id,

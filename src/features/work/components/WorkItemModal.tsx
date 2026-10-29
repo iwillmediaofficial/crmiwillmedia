@@ -45,7 +45,7 @@ export const WorkItemModal: React.FC<WorkItemModalProps> = ({
   onSubmit,
   onDelete,
 }) => {
-  const { isAdmin, user } = useAuth()
+  const { isAdmin, user, profile } = useAuth()
 
   // Fetch active clients
   const { data: clients } = useQuery({
@@ -62,7 +62,7 @@ export const WorkItemModal: React.FC<WorkItemModalProps> = ({
     enabled: isOpen,
   })
 
-  // Fetch active staff
+  // Fetch active staff (only needed for admin assigning)
   const { data: staffList } = useQuery({
     queryKey: ['active-staff-select'],
     queryFn: async () => {
@@ -74,7 +74,7 @@ export const WorkItemModal: React.FC<WorkItemModalProps> = ({
       if (error) throw error
       return data
     },
-    enabled: isOpen,
+    enabled: isOpen && isAdmin,
   })
 
   const {
@@ -82,6 +82,7 @@ export const WorkItemModal: React.FC<WorkItemModalProps> = ({
     handleSubmit,
     reset,
     watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<WorkItemFormValues>({
     resolver: zodResolver(workItemSchema),
@@ -141,7 +142,10 @@ export const WorkItemModal: React.FC<WorkItemModalProps> = ({
         remarks: '',
       })
     }
-  }, [initialWorkItem, reset, isOpen, isAdmin, user?.id])
+    if (!isAdmin && user?.id) {
+      setValue('assigned_staff_id', user.id)
+    }
+  }, [initialWorkItem, reset, isOpen, isAdmin, user?.id, setValue])
 
   const handleFormSubmit = async (values: WorkItemFormValues) => {
     await onSubmit({
@@ -200,31 +204,55 @@ export const WorkItemModal: React.FC<WorkItemModalProps> = ({
             )}
           </div>
 
-          <div className="space-y-1.5">
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600">
-              Assigned Staff
-            </label>
-            <select
-              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed"
-              disabled={!isAdmin}
-              {...register('assigned_staff_id')}
-            >
-              {isAdmin && <option value="">Select Assignee</option>}
-              {staffList?.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.full_name} ({s.designation || 'Staff'}) {s.id === user?.id ? '(You)' : ''}
-                </option>
-              ))}
-            </select>
-            {!isAdmin && (
-              <p className="text-[11px] text-brand-600 font-medium">
-                Self-assignment: This deliverable is assigned to you.
-              </p>
-            )}
-            {errors.assigned_staff_id && (
-              <p className="text-xs text-rose-600">{errors.assigned_staff_id.message}</p>
-            )}
-          </div>
+          {isAdmin ? (
+            <div className="space-y-1.5">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600">
+                Assigned Staff
+              </label>
+              <select
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+                {...register('assigned_staff_id')}
+              >
+                <option value="">Select Assignee</option>
+                {staffList?.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.full_name} ({s.designation || 'Staff'}) {s.id === user?.id ? '(You)' : ''}
+                  </option>
+                ))}
+              </select>
+              {errors.assigned_staff_id && (
+                <p className="text-xs text-rose-600">{errors.assigned_staff_id.message}</p>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-1.5">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600">
+                Assigned Staff
+              </label>
+              <input type="hidden" {...register('assigned_staff_id')} />
+              <div className="flex items-center gap-3 p-2.5 rounded-lg border border-brand-200 bg-brand-50/70">
+                <div className="w-8 h-8 rounded-full bg-brand-100 border border-brand-300 flex items-center justify-center text-brand-700 font-bold text-xs uppercase shadow-sm">
+                  {profile?.full_name ? profile.full_name.slice(0, 2) : 'ME'}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-slate-900 truncate">
+                      {profile?.full_name || 'You'}
+                    </span>
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-brand-200 text-brand-800 uppercase tracking-wider">
+                      Self-Assigned
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 truncate">
+                    {profile?.designation || 'Staff Member'} • Assigned to You
+                  </p>
+                </div>
+              </div>
+              {errors.assigned_staff_id && (
+                <p className="text-xs text-rose-600">{errors.assigned_staff_id.message}</p>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="space-y-1.5">

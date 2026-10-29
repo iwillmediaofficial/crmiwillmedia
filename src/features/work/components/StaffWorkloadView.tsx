@@ -31,7 +31,7 @@ interface StaffWorkloadViewProps {
   activeTimersByStaffId?: Record<string, StaffActiveTimer>
 }
 
-type FilterType = 'all' | 'active' | 'ongoing' | 'pending' | 'done'
+type FilterType = 'all' | 'active' | 'assigned' | 'ongoing' | 'pending' | 'done'
 
 interface StaffCardProps {
   staff: any
@@ -68,7 +68,7 @@ const StaffCardSection: React.FC<StaffCardProps> = ({
 }) => {
   const { isAdmin, user } = useAuth()
   const [statusFilter, setStatusFilter] = useState<FilterType>('all')
-  const [visibleCount, setVisibleCount] = useState<number>(5)
+  const [visibleCount, setVisibleCount] = useState<number>(10)
 
   // Current active timer for this specific staff member
   const currentStaffTimer =
@@ -82,20 +82,21 @@ const StaffCardSection: React.FC<StaffCardProps> = ({
 
   // Filter items based on active button
   const filteredItems = items.filter((item) => {
-    if (statusFilter === 'active') return item.status === 'assigned'
+    if (statusFilter === 'active') return item.status === 'assigned' || item.status === 'in_progress'
+    if (statusFilter === 'assigned') return item.status === 'assigned'
     if (statusFilter === 'ongoing') return item.status === 'in_progress'
     if (statusFilter === 'pending') return item.status === 'pending'
     if (statusFilter === 'done') return item.status === 'completed'
     return true
   })
 
-  // Sliced items for 5-at-a-time pagination
+  // Sliced items for 10-at-a-time pagination
   const displayedItems = filteredItems.slice(0, visibleCount)
   const hasMore = filteredItems.length > visibleCount
 
   const handleFilterChange = (newFilter: FilterType) => {
     setStatusFilter(newFilter)
-    setVisibleCount(5) // Reset pagination to initial 5 items on filter switch
+    setVisibleCount(10) // Reset pagination to initial 10 items on filter switch
   }
 
   return (
@@ -158,19 +159,19 @@ const StaffCardSection: React.FC<StaffCardProps> = ({
             className={cn(
               'text-[11px] px-2.5 py-1 rounded-full font-semibold transition-all cursor-pointer border flex items-center gap-1.5 active:scale-95',
               statusFilter === 'active'
-                ? 'bg-violet-600 text-white border-violet-600 shadow-sm'
-                : 'bg-violet-50 text-violet-700 hover:bg-violet-100 border-violet-200'
+                ? 'bg-brand-600 text-white border-brand-600 shadow-sm'
+                : 'bg-brand-50 text-brand-700 hover:bg-brand-100 border-brand-200'
             )}
-            title="Show assigned/waiting works"
+            title="Show all active works (assigned and in progress)"
           >
             <span>Active</span>
             <span
               className={cn(
                 'text-[10px] px-1.5 py-0.2 rounded-full font-bold',
-                statusFilter === 'active' ? 'bg-white/20 text-white' : 'bg-violet-100 text-violet-800'
+                statusFilter === 'active' ? 'bg-white/20 text-white' : 'bg-brand-100 text-brand-800'
               )}
             >
-              {assignedCount}
+              {assignedCount + ongoingCount}
             </span>
           </button>
 
@@ -193,6 +194,28 @@ const StaffCardSection: React.FC<StaffCardProps> = ({
               )}
             >
               {ongoingCount}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleFilterChange('assigned')}
+            className={cn(
+              'text-[11px] px-2.5 py-1 rounded-full font-semibold transition-all cursor-pointer border flex items-center gap-1.5 active:scale-95',
+              statusFilter === 'assigned'
+                ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                : 'bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200'
+            )}
+            title="Show unstarted / assigned works"
+          >
+            <span>Assigned</span>
+            <span
+              className={cn(
+                'text-[10px] px-1.5 py-0.2 rounded-full font-bold',
+                statusFilter === 'assigned' ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-800'
+              )}
+            >
+              {assignedCount}
             </span>
           </button>
 
@@ -505,14 +528,14 @@ const StaffCardSection: React.FC<StaffCardProps> = ({
               <div className="pt-2">
                 <button
                   type="button"
-                  onClick={() => setVisibleCount((prev) => prev + 5)}
+                  onClick={() => setVisibleCount((prev) => prev + 10)}
                   className="w-full py-2.5 px-4 rounded-xl border border-slate-200/90 bg-slate-50 hover:bg-slate-100 hover:border-slate-300 text-slate-700 font-semibold text-xs transition-all flex items-center justify-center gap-1.5 shadow-xs active:scale-[0.99] cursor-pointer"
                 >
                   <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
                   <span>Load More ({filteredItems.length - visibleCount} remaining)</span>
                 </button>
               </div>
-            ) : filteredItems.length > 5 ? (
+            ) : filteredItems.length > 10 ? (
               <p className="text-center text-[11px] text-slate-400 pt-1 pb-0.5">
                 Showing all {filteredItems.length} work items
               </p>
