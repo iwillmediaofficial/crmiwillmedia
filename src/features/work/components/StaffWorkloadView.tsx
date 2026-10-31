@@ -454,6 +454,22 @@ const StaffCardSection: React.FC<StaffCardProps> = ({
                               <span>
                                 In Session: {formatTimeSeconds(currentStaffTimer?.elapsedSeconds || 0)}
                               </span>
+                              {isAdmin && currentStaffTimer?.entryId && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    if (confirm(`Stop active timer for ${staff.full_name || 'staff'}?`)) {
+                                      stopTimer(currentStaffTimer.entryId)
+                                    }
+                                  }}
+                                  disabled={isStopping}
+                                  title="Admin: Stop this timer"
+                                  className="ml-1 p-0.5 rounded bg-rose-600 hover:bg-rose-700 text-white cursor-pointer transition-all active:scale-95"
+                                >
+                                  <Square className="w-2.5 h-2.5 fill-current" />
+                                </button>
+                              )}
                             </span>
                           ) : null}
 

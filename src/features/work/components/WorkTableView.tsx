@@ -245,10 +245,25 @@ export const WorkTableView: React.FC<WorkTableViewProps> = ({
                           )
                         ) : isItemTimerRunning ? (
                           <span
-                            className="p-1 px-1.5 rounded bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200"
+                            className="inline-flex items-center gap-1 p-1 px-1.5 rounded bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200"
                             title={`Active Timer: ${formatTimeSeconds(itemActiveTimer?.elapsedSeconds || 0)}`}
                           >
-                            Active
+                            <span>Active ({formatTimeSeconds(itemActiveTimer?.elapsedSeconds || 0)})</span>
+                            {isAdmin && itemActiveTimer?.entryId && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  if (confirm('Stop active timer for this work item?')) {
+                                    stopTimer(itemActiveTimer.entryId)
+                                  }
+                                }}
+                                disabled={isStopping}
+                                title="Admin: Stop this timer"
+                                className="p-0.5 rounded bg-rose-600 hover:bg-rose-700 text-white cursor-pointer ml-0.5 transition-all active:scale-95"
+                              >
+                                <Square className="w-2.5 h-2.5 fill-current" />
+                              </button>
+                            )}
                           </span>
                         ) : null}
 

@@ -1,13 +1,28 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Play, Clock, ArrowRight, UserCheck } from 'lucide-react'
+import { Play, Clock, ArrowRight, UserCheck, Square, AlertTriangle } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { useAdminActiveTimers } from '@/features/timer/hooks/useAdminActiveTimers'
 import { formatTimeSeconds } from '@/lib/formatters'
 
 export const ActiveTeamTimersWidget: React.FC = () => {
   const navigate = useNavigate()
-  const { activeTimers, activeCount } = useAdminActiveTimers()
+  const { activeTimers, activeCount, stopStaffTimer } = useAdminActiveTimers()
+  const [stoppingId, setStoppingId] = useState<string | null>(null)
+
+  const handleStop = async (e: React.MouseEvent, entryId: string, staffName: string) => {
+    e.stopPropagation()
+    if (confirm(`Stop active timer for ${staffName}?`)) {
+      setStoppingId(entryId)
+      try {
+        await stopStaffTimer(entryId)
+      } catch (err: any) {
+        alert(`Failed to stop timer: ${err.message}`)
+      } finally {
+        setStoppingId(null)
+      }
+    }
+  }
 
   return (
     <Card className="border-emerald-200/80 bg-gradient-to-br from-emerald-50/30 via-white to-white">
@@ -69,11 +84,30 @@ export const ActiveTeamTimersWidget: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="text-right shrink-0">
-                  <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-700 font-mono font-bold text-xs">
-                    <Play className="w-2.5 h-2.5 fill-current text-emerald-600 animate-pulse" />
+                <div className="flex items-center gap-2 shrink-0">
+                  <div
+                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md border font-mono font-bold text-xs ${
+                      timer.isNearCutoff
+                        ? 'bg-amber-50 border-amber-300 text-amber-800'
+                        : 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                    }`}
+                  >
+                    {timer.isNearCutoff ? (
+                      <AlertTriangle className="w-2.5 h-2.5 text-amber-600" />
+                    ) : (
+                      <Play className="w-2.5 h-2.5 fill-current text-emerald-600 animate-pulse" />
+                    )}
                     <span>{formatTimeSeconds(timer.elapsedSeconds)}</span>
                   </div>
+
+                  <button
+                    onClick={(e) => handleStop(e, timer.entryId, timer.staffName)}
+                    disabled={stoppingId === timer.entryId}
+                    title={`Stop ${timer.staffName}'s timer`}
+                    className="p-1.5 rounded-md bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-semibold shadow-2xs transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
+                  >
+                    <Square className="w-3 h-3 fill-current" />
+                  </button>
                 </div>
               </div>
             ))}

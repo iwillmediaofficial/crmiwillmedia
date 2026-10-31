@@ -13,6 +13,7 @@ import {
   Settings,
   LogOut,
   X,
+  Globe,
 } from 'lucide-react'
 import { useAuth } from '@/features/auth/AuthContext'
 import { Badge } from '@/components/ui/Badge'
@@ -43,6 +44,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       : []),
     { label: 'DM Work Calendar', path: '/dm-calendar', icon: CalendarCheck2 },
     { label: 'Billing Calendar', path: '/calendar', icon: CalendarDays },
+    { label: 'Domains & Servers', path: '/domains-servers', icon: Globe },
     ...(isAdmin
       ? [
           { label: 'Staff Roster', path: '/staff', icon: UserCheck },

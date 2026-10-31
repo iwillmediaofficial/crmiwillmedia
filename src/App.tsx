@@ -22,6 +22,7 @@ const DMWorkCalendarPage = lazy(() => import('./features/calendar/pages/DMWorkCa
 const AdFundPage = lazy(() => import('./features/ad-funds/pages/AdFundPage').then(m => ({ default: m.AdFundPage })))
 const StaffPage = lazy(() => import('./features/staff/pages/StaffPage').then(m => ({ default: m.StaffPage })))
 const SettingsPage = lazy(() => import('./features/settings/pages/SettingsPage').then(m => ({ default: m.SettingsPage })))
+const DomainsServersPage = lazy(() => import('./features/domains-servers/pages/DomainsServersPage').then(m => ({ default: m.DomainsServersPage })))
 const MetaInstantFormPage = lazy(() => import('./features/public-form/pages/MetaInstantFormPage').then(m => ({ default: m.MetaInstantFormPage })))
 
 const PageLoader = () => (
@@ -61,6 +62,7 @@ export function App() {
                   <Route path="/calendar" element={<BillingCalendarPage />} />
                   <Route path="/dm-calendar" element={<DMWorkCalendarPage />} />
                   <Route path="/calendar/dm" element={<Navigate to="/dm-calendar" replace />} />
+                  <Route path="/domains-servers" element={<DomainsServersPage />} />
 
                   {/* Admin Only Routes */}
                   <Route element={<ProtectedRoute requiredRole="admin" />}>

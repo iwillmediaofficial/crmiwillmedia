@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 import {
   Settings,
   Building,
@@ -8,6 +9,8 @@ import {
   FileSpreadsheet,
   Database,
   Cloud,
+  Globe,
+  ArrowUpRight,
 } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
@@ -16,6 +19,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/Badge'
+import { TimerCutoffSettingsCard } from '../components/TimerCutoffSettingsCard'
 
 export const SettingsPage: React.FC = () => {
   const queryClient = useQueryClient()
@@ -82,7 +86,7 @@ export const SettingsPage: React.FC = () => {
   })
 
   // Export Handlers
-  const handleExport = async (type: 'leads' | 'clients' | 'work_items' | 'billing_records') => {
+  const handleExport = async (type: 'leads' | 'clients' | 'work_items' | 'billing_records' | 'domains_servers') => {
     setIsExporting(type)
     try {
       const { data, error } = await supabase.from(type).select('*').order('created_at', { ascending: false })
@@ -193,6 +197,54 @@ export const SettingsPage: React.FC = () => {
             </CardContent>
           </Card>
 
+          {/* Staff Timer & Auto Cut-off Configuration */}
+          <TimerCutoffSettingsCard />
+
+          {/* Domain & Server Expiry Settings */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center gap-2">
+                  <Globe className="w-4 h-4 text-brand-600" />
+                  <CardTitle>Domain & Server Expiry Management</CardTitle>
+                </div>
+                <Link
+                  to="/domains-servers"
+                  className="text-xs font-semibold text-brand-600 hover:text-brand-700 flex items-center gap-1"
+                >
+                  <span>Open Section</span>
+                  <ArrowUpRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs text-slate-500 mb-4 leading-relaxed">
+                Centralized registry to keep track of domain registrations, VPS nodes, web hosting renewals, SSL certificates, registrar accounts, and renewal due dates.
+              </p>
+
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-xl bg-slate-50 border border-slate-200 gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
+                    <Globe className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-900">
+                      Manage Infrastructure Assets
+                    </p>
+                    <p className="text-[11px] text-slate-500">
+                      View renewal countdowns, cost commitments, and auto-renew status
+                    </p>
+                  </div>
+                </div>
+                <Link to="/domains-servers">
+                  <Button size="sm" variant="secondary" className="text-xs h-8 whitespace-nowrap">
+                    Manage Assets &rarr;
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Data Export Center */}
           <Card>
             <CardHeader>
@@ -266,6 +318,22 @@ export const SettingsPage: React.FC = () => {
                     </p>
                     <p className="text-[11px] text-slate-400 mt-0.5">
                       Receivables and settlement history
+                    </p>
+                  </div>
+                  <Download className="w-4 h-4 text-slate-400 group-hover:text-brand-600" />
+                </button>
+
+                <button
+                  onClick={() => handleExport('domains_servers')}
+                  disabled={!!isExporting}
+                  className="p-3.5 rounded-xl border border-slate-200 hover:border-brand-300 hover:bg-slate-50 flex items-center justify-between text-left transition-all group sm:col-span-2"
+                >
+                  <div>
+                    <p className="font-semibold text-slate-900 text-xs group-hover:text-brand-600">
+                      Domains & Servers Registry
+                    </p>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      Asset names, hosts, providers, renewal dates, and costs
                     </p>
                   </div>
                   <Download className="w-4 h-4 text-slate-400 group-hover:text-brand-600" />

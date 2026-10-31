@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns'
 import { supabase } from '@/lib/supabase'
 import { WorkItem } from '@/types/database.types'
 import { useAuth } from '@/features/auth/AuthContext'
@@ -9,7 +10,10 @@ export interface WorkFilterParams {
   priority?: string
   staffId?: string
   clientId?: string
-  dueFilter?: 'all' | 'today' | 'tomorrow' | 'overdue' | 'upcoming'
+  dueFilter?: 'all' | 'today' | 'overdue' | 'upcoming'
+  dateField?: 'due_date' | 'start_date'
+  startDate?: string
+  endDate?: string
 }
 
 export function useWork(filters: WorkFilterParams = {}) {
@@ -17,7 +21,7 @@ export function useWork(filters: WorkFilterParams = {}) {
   const queryClient = useQueryClient()
 
   // Fetch work items with client and assigned staff joins + sum of timer entries
-  const { data: workItems, isLoading, error } = useQuery({
+  const { data: workItems = [], isLoading, error } = useQuery({
     queryKey: ['work-items', filters, user?.id],
     queryFn: async () => {
       let query = supabase
@@ -72,6 +76,7 @@ export function useWork(filters: WorkFilterParams = {}) {
         query = query.or(`title.ilike.${term},description.ilike.${term}`)
       }
 
+      // 1. Original Deadlines Filter (Untouched)
       const today = new Date().toISOString().split('T')[0]
       if (filters.dueFilter === 'today') {
         query = query.eq('due_date', today)
@@ -79,6 +84,15 @@ export function useWork(filters: WorkFilterParams = {}) {
         query = query.lt('due_date', today).neq('status', 'completed')
       } else if (filters.dueFilter === 'upcoming') {
         query = query.gt('due_date', today)
+      }
+
+      // 2. New Dedicated Date Range Filter (From / To)
+      const targetDateField = filters.dateField || 'due_date'
+      if (filters.startDate) {
+        query = query.gte(targetDateField, filters.startDate)
+      }
+      if (filters.endDate) {
+        query = query.lte(targetDateField, filters.endDate)
       }
 
       const { data, error } = await query
@@ -121,15 +135,10 @@ export function useWork(filters: WorkFilterParams = {}) {
         const weightB = statusWeight[b.status] || 99
         if (weightA !== weightB) return weightA - weightB
 
-        if (a.status === 'completed' || a.status === 'cancelled') {
-          const timeA = new Date(a.completed_at || a.updated_at || a.created_at).getTime()
-          const timeB = new Date(b.completed_at || b.updated_at || b.created_at).getTime()
-          return timeB - timeA
+        if (a.status !== 'completed' && a.due_date && b.due_date) {
+          const dueDiff = new Date(a.due_date).getTime() - new Date(b.due_date).getTime()
+          if (dueDiff !== 0) return dueDiff
         }
-
-        const dateA = a.due_date ? new Date(a.due_date).getTime() : Infinity
-        const dateB = b.due_date ? new Date(b.due_date).getTime() : Infinity
-        if (dateA !== dateB) return dateA - dateB
 
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       })
@@ -137,88 +146,74 @@ export function useWork(filters: WorkFilterParams = {}) {
     enabled: !!user?.id,
   })
 
-  // Create work item mutation (Admin)
-  const createWorkItem = useMutation({
+  // Mutation to create work item
+  const createWorkItemMutation = useMutation({
     mutationFn: async (payload: Partial<WorkItem>) => {
       const { data, error } = await supabase
         .from('work_items')
         .insert([{ ...payload, created_by: user?.id }])
         .select()
-        .single()
       if (error) throw error
-      return data
+      return data[0]
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['work-items'] })
-      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] })
     },
   })
 
-  // Update work item mutation
-  const updateWorkItem = useMutation({
+  // Mutation to update work item
+  const updateWorkItemMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<WorkItem> }) => {
       const { data, error } = await supabase
         .from('work_items')
-        .update({ ...updates, updated_at: new Date().toISOString() })
+        .update(updates)
         .eq('id', id)
         .select()
-        .single()
+      if (error) throw error
+      return data[0]
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['work-items'] })
+    },
+  })
+
+  // Mutation to mark work item completed
+  const markCompletedMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { data, error } = await supabase.rpc('mark_work_item_completed', {
+        p_work_item_id: id,
+      })
       if (error) throw error
       return data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['work-items'] })
-      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] })
       queryClient.invalidateQueries({ queryKey: ['billing-records'] })
-      queryClient.invalidateQueries({ queryKey: ['calendar-bills'] })
     },
   })
 
-  // Mark Completed mutation
-  const markCompleted = useMutation({
+  // Mutation to delete work item (Admins only)
+  const deleteWorkItemMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { data, error } = await supabase
-        .from('work_items')
-        .update({
-          status: 'completed',
-          completed_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', id)
-        .select()
-        .single()
+      const { data, error } = await supabase.from('work_items').delete().eq('id', id)
       if (error) throw error
       return data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['work-items'] })
-      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] })
-      queryClient.invalidateQueries({ queryKey: ['billing-records'] })
-      queryClient.invalidateQueries({ queryKey: ['calendar-bills'] })
-    },
-  })
-
-  // Delete work item (Admin)
-  const deleteWorkItem = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from('work_items').delete().eq('id', id)
-      if (error) throw error
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['work-items'] })
-      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] })
     },
   })
 
   return {
-    workItems: workItems || [],
+    workItems,
     isLoading,
     error,
-    createWorkItem: createWorkItem.mutateAsync,
-    updateWorkItem: updateWorkItem.mutateAsync,
-    markCompleted: markCompleted.mutateAsync,
-    deleteWorkItem: deleteWorkItem.mutateAsync,
-    isCreating: createWorkItem.isPending,
-    isUpdating: updateWorkItem.isPending,
+    createWorkItem: createWorkItemMutation.mutateAsync,
+    updateWorkItem: updateWorkItemMutation.mutateAsync,
+    markCompleted: markCompletedMutation.mutateAsync,
+    deleteWorkItem: deleteWorkItemMutation.mutateAsync,
+    isCreating: createWorkItemMutation.isPending,
+    isUpdating: updateWorkItemMutation.isPending,
+    isCompleting: markCompletedMutation.isPending,
   }
 }
