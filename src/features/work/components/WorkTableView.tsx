@@ -12,12 +12,14 @@ import {
   Trash2,
   Eye,
   User,
+  Loader2,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { formatDate, formatTimeSeconds } from '@/lib/formatters'
 import { useTimer } from '@/features/timer/hooks/useTimer'
 import { useAuth } from '@/features/auth/AuthContext'
 import { StaffActiveTimer } from '@/features/timer/hooks/useAdminActiveTimers'
+import { cn } from '@/lib/utils'
 
 interface WorkTableViewProps {
   workItems: any[]
@@ -26,6 +28,7 @@ interface WorkTableViewProps {
   onOpenPending: (item: any) => void
   onResumeWork: (item: any) => void
   onMarkCompleted: (id: string) => void
+  completingId?: string | null
   onDelete?: (id: string, title: string) => void
   activeTimersByWorkItemId?: Record<string, StaffActiveTimer>
 }
@@ -37,6 +40,7 @@ export const WorkTableView: React.FC<WorkTableViewProps> = ({
   onOpenPending,
   onResumeWork,
   onMarkCompleted,
+  completingId,
   onDelete,
   activeTimersByWorkItemId = {},
 }) => {
@@ -286,11 +290,25 @@ export const WorkTableView: React.FC<WorkTableViewProps> = ({
                         )}
 
                         <button
-                          onClick={() => onMarkCompleted(item.id)}
-                          className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors"
-                          title="Mark Completed"
+                          type="button"
+                          disabled={completingId === item.id}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onMarkCompleted(item.id)
+                          }}
+                          className={cn(
+                            'p-1.5 rounded-md transition-colors',
+                            completingId === item.id
+                              ? 'text-slate-300 cursor-not-allowed'
+                              : 'text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 cursor-pointer active:scale-95'
+                          )}
+                          title={completingId === item.id ? 'Completing...' : 'Mark Completed'}
                         >
-                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          {completingId === item.id ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600" />
+                          ) : (
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                          )}
                         </button>
                       </>
                     )}

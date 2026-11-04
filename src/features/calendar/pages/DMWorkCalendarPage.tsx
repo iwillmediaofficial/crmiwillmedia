@@ -143,9 +143,9 @@ export const DMWorkCalendarPage: React.FC = () => {
               try {
                 const count = await autoAssignUnassignedRecurringClients()
                 alert(`Successfully auto-assigned ${count} deliverables for ${format(currentDate, 'MMMM yyyy')}!`)
-              } catch (err) {
+              } catch (err: any) {
                 console.error(err)
-                alert('Error auto-assigning deliverables.')
+                alert(`Error auto-assigning deliverables: ${err?.message || 'Please check recurring plans configuration.'}`)
               } finally {
                 setIsBatchGenerating(false)
               }

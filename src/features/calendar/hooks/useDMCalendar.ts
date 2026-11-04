@@ -257,17 +257,38 @@ export function useDMCalendar(initialDate: Date = new Date()) {
 
   // Bulk create work items mutation (Auto-assign 1-month work)
   const bulkCreateWorkItems = useMutation({
-    mutationFn: async (items: Partial<WorkItem>[]) => {
-      const recordsToInsert = items.map((item) => ({
-        ...item,
-        created_by: user?.id,
-        status: item.status || 'assigned',
-        priority: item.priority || 'normal',
-        billing_status: item.billing_status || 'unbilled',
-        is_billable: item.is_billable ?? false,
-        billable_amount: item.billable_amount ?? 0,
-        currency: item.currency || 'INR',
-      }))
+    mutationFn: async (items: (Partial<WorkItem> & { tempId?: string })[]) => {
+      const defaultStaffId = staffList[0]?.id || user?.id || null
+      const todayStr = format(new Date(), 'yyyy-MM-dd')
+
+      const recordsToInsert = items.map((item) => {
+        // Strip tempId and any extra joined relation fields (like clients, profiles)
+        const {
+          tempId: _tempId,
+          clients: _clients,
+          profiles: _profiles,
+          ...rest
+        } = item as any
+
+        return {
+          client_id: rest.client_id,
+          title: rest.title,
+          description: rest.description ?? null,
+          deliverable_type: rest.deliverable_type || 'general',
+          dm_plan_id: rest.dm_plan_id || null,
+          assigned_staff_id: rest.assigned_staff_id || defaultStaffId,
+          assigned_date: rest.assigned_date || rest.start_date || todayStr,
+          start_date: rest.start_date || rest.assigned_date || todayStr,
+          due_date: rest.due_date,
+          priority: rest.priority || 'normal',
+          status: rest.status || 'assigned',
+          billing_status: rest.billing_status || 'unbilled',
+          is_billable: rest.is_billable ?? false,
+          billable_amount: rest.billable_amount ?? 0,
+          currency: rest.currency || 'INR',
+          created_by: user?.id || null,
+        }
+      })
 
       const { data, error } = await supabase
         .from('work_items')
@@ -413,7 +434,11 @@ export function useDMCalendar(initialDate: Date = new Date()) {
           plans,
         })
         if (schedule.length > 0) {
-          await bulkCreateWorkItems.mutateAsync(schedule)
+          const payload = schedule.map(({ tempId: _t, ...item }) => ({
+            ...item,
+            assigned_date: item.start_date,
+          }))
+          await bulkCreateWorkItems.mutateAsync(payload)
           totalGenerated += schedule.length
         }
       }

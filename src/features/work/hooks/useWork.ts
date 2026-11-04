@@ -177,7 +177,7 @@ export function useWork(filters: WorkFilterParams = {}) {
     },
   })
 
-  // Mutation to mark work item completed
+  // Mutation to mark work item completed with optimistic update
   const markCompletedMutation = useMutation({
     mutationFn: async (id: string) => {
       const { data, error } = await supabase.rpc('mark_work_item_completed', {
@@ -186,9 +186,46 @@ export function useWork(filters: WorkFilterParams = {}) {
       if (error) throw error
       return data
     },
-    onSuccess: () => {
+    onMutate: async (id: string) => {
+      // Cancel outgoing refetches so they don't overwrite optimistic update
+      await queryClient.cancelQueries({ queryKey: ['work-items'] })
+
+      // Snapshot previous values across all work-items query keys
+      const previousQueries = queryClient.getQueriesData({ queryKey: ['work-items'] })
+
+      // Optimistically update every work-items query cache immediately
+      queryClient.setQueriesData({ queryKey: ['work-items'] }, (old: any) => {
+        if (!Array.isArray(old)) return old
+        return old.map((item: any) =>
+          item.id === id
+            ? {
+                ...item,
+                status: 'completed',
+                completed_at: new Date().toISOString(),
+                billing_status: item.is_billable ? 'billed' : item.billing_status,
+              }
+            : item
+        )
+      })
+
+      return { previousQueries }
+    },
+    onError: (_err, _id, context: any) => {
+      // Rollback on error
+      if (context?.previousQueries) {
+        context.previousQueries.forEach(([queryKey, data]: [any, any]) => {
+          queryClient.setQueryData(queryKey, data)
+        })
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['work-items'] })
       queryClient.invalidateQueries({ queryKey: ['billing-records'] })
+      queryClient.invalidateQueries({ queryKey: ['active-timer'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-active-timers'] })
+      queryClient.invalidateQueries({ queryKey: ['time-entries'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] })
+      queryClient.invalidateQueries({ queryKey: ['calendar-bills'] })
     },
   })
 

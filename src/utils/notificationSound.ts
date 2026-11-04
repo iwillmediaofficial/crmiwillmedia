@@ -4,13 +4,19 @@
 const SOUND_STORAGE_KEY = 'iwillmedia_notification_sound_enabled'
 
 let audioCtx: AudioContext | null = null
+let hasUserGesture = false
 
 function getAudioContext(): AudioContext | null {
   if (typeof window === 'undefined') return null
+  if (!hasUserGesture) return null
   if (!audioCtx) {
     const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext
     if (AudioContextClass) {
-      audioCtx = new AudioContextClass()
+      try {
+        audioCtx = new AudioContextClass()
+      } catch {
+        return null
+      }
     }
   }
   return audioCtx
@@ -19,6 +25,7 @@ function getAudioContext(): AudioContext | null {
 // Automatically unlock AudioContext on first user interaction (browser autoplay compliance)
 if (typeof window !== 'undefined') {
   const unlockAudio = () => {
+    hasUserGesture = true
     const ctx = getAudioContext()
     if (ctx && ctx.state === 'suspended') {
       ctx.resume().catch(() => {})

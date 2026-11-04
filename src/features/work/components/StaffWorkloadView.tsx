@@ -11,6 +11,7 @@ import {
   ChevronDown,
   Eye,
   User,
+  Loader2,
 } from 'lucide-react'
 import { Card, CardHeader, CardContent } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
@@ -27,6 +28,7 @@ interface StaffWorkloadViewProps {
   onOpenPending: (item: any) => void
   onResumeWork: (item: any) => void
   onMarkCompleted: (id: string) => void
+  completingId?: string | null
   onDelete?: (id: string, title: string) => void
   activeTimersByStaffId?: Record<string, StaffActiveTimer>
 }
@@ -47,6 +49,7 @@ interface StaffCardProps {
   onOpenPending: (item: any) => void
   onResumeWork: (item: any) => void
   onMarkCompleted: (id: string) => void
+  completingId?: string | null
   onDelete?: (id: string, title: string) => void
 }
 
@@ -64,6 +67,7 @@ const StaffCardSection: React.FC<StaffCardProps> = ({
   onOpenPending,
   onResumeWork,
   onMarkCompleted,
+  completingId,
   onDelete,
 }) => {
   const { isAdmin, user } = useAuth()
@@ -526,11 +530,30 @@ const StaffCardSection: React.FC<StaffCardProps> = ({
                       {item.status !== 'completed' && (
                         <button
                           type="button"
-                          onClick={() => onMarkCompleted(item.id)}
-                          className="inline-flex items-center gap-1 text-[11px] text-emerald-600 hover:text-emerald-700 font-semibold cursor-pointer"
+                          disabled={completingId === item.id}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onMarkCompleted(item.id)
+                          }}
+                          className={cn(
+                            'inline-flex items-center gap-1 text-[11px] font-semibold transition-all',
+                            completingId === item.id
+                              ? 'text-slate-400 cursor-not-allowed opacity-75'
+                              : 'text-emerald-600 hover:text-emerald-700 cursor-pointer active:scale-95'
+                          )}
+                          title="Mark work item as completed"
                         >
-                          <CheckCircle2 className="w-3 h-3" />
-                          <span>Complete</span>
+                          {completingId === item.id ? (
+                            <>
+                              <Loader2 className="w-3 h-3 animate-spin text-emerald-600" />
+                              <span>Completing...</span>
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle2 className="w-3 h-3" />
+                              <span>Complete</span>
+                            </>
+                          )}
                         </button>
                       )}
                     </div>
@@ -570,6 +593,7 @@ export const StaffWorkloadView: React.FC<StaffWorkloadViewProps> = ({
   onOpenPending,
   onResumeWork,
   onMarkCompleted,
+  completingId,
   onDelete,
   activeTimersByStaffId = {},
 }) => {
@@ -608,6 +632,7 @@ export const StaffWorkloadView: React.FC<StaffWorkloadViewProps> = ({
           onOpenPending={onOpenPending}
           onResumeWork={onResumeWork}
           onMarkCompleted={onMarkCompleted}
+          completingId={completingId}
           onDelete={onDelete}
         />
       ))}

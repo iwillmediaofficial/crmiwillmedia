@@ -43,6 +43,7 @@ export const WorkPage: React.FC = () => {
 
   const [isPendingModalOpen, setIsPendingModalOpen] = useState(false)
   const [pendingTargetItem, setPendingTargetItem] = useState<WorkItem | null>(null)
+  const [completingId, setCompletingId] = useState<string | null>(null)
 
   const {
     workItems,
@@ -109,6 +110,19 @@ export const WorkPage: React.FC = () => {
     if (!isAdmin && item?.created_by !== user?.id) return
     if (confirm(`Are you sure you want to delete task "${title}"?`)) {
       await deleteWorkItem(id)
+    }
+  }
+
+  const handleMarkCompleted = async (id: string) => {
+    if (completingId) return
+    setCompletingId(id)
+    try {
+      await markCompleted(id)
+    } catch (err: any) {
+      console.error('Failed to mark deliverable completed:', err)
+      alert(err.message || 'Failed to complete task')
+    } finally {
+      setCompletingId(null)
     }
   }
 
@@ -362,7 +376,8 @@ export const WorkPage: React.FC = () => {
           onOpenEdit={handleOpenEdit}
           onOpenPending={handleOpenPending}
           onResumeWork={handleResumeWork}
-          onMarkCompleted={markCompleted}
+          onMarkCompleted={handleMarkCompleted}
+          completingId={completingId}
           onDelete={handleDelete}
           activeTimersByStaffId={activeTimersByStaffId}
         />
@@ -374,7 +389,8 @@ export const WorkPage: React.FC = () => {
             onOpenEdit={handleOpenEdit}
             onOpenPending={handleOpenPending}
             onResumeWork={handleResumeWork}
-            onMarkCompleted={markCompleted}
+            onMarkCompleted={handleMarkCompleted}
+            completingId={completingId}
             onDelete={handleDelete}
             activeTimersByWorkItemId={activeTimersByWorkItemId}
           />
