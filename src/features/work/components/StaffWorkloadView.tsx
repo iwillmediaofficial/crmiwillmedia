@@ -71,7 +71,7 @@ const StaffCardSection: React.FC<StaffCardProps> = ({
   onDelete,
 }) => {
   const { isAdmin, user } = useAuth()
-  const [statusFilter, setStatusFilter] = useState<FilterType>('all')
+  const [statusFilter, setStatusFilter] = useState<FilterType>('active')
   const [visibleCount, setVisibleCount] = useState<number>(10)
 
   // Current active timer for this specific staff member
@@ -133,30 +133,8 @@ const StaffCardSection: React.FC<StaffCardProps> = ({
           </div>
         </div>
 
-        {/* Filter buttons: All, Active, On going, Pending, Done */}
+        {/* Filter buttons: Active, On going, Assigned, Pending, Done, All */}
         <div className="flex flex-wrap items-center gap-1.5">
-          <button
-            type="button"
-            onClick={() => handleFilterChange('all')}
-            className={cn(
-              'text-[11px] px-2.5 py-1 rounded-full font-semibold transition-all cursor-pointer border flex items-center gap-1.5 active:scale-95',
-              statusFilter === 'all'
-                ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'
-            )}
-            title="Show all works"
-          >
-            <span>All</span>
-            <span
-              className={cn(
-                'text-[10px] px-1.5 py-0.2 rounded-full font-bold',
-                statusFilter === 'all' ? 'bg-white/20 text-white' : 'bg-slate-200/90 text-slate-700'
-              )}
-            >
-              {items.length}
-            </span>
-          </button>
-
           <button
             type="button"
             onClick={() => handleFilterChange('active')}
@@ -264,6 +242,28 @@ const StaffCardSection: React.FC<StaffCardProps> = ({
               )}
             >
               {completedCount}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleFilterChange('all')}
+            className={cn(
+              'text-[11px] px-2.5 py-1 rounded-full font-semibold transition-all cursor-pointer border flex items-center gap-1.5 active:scale-95',
+              statusFilter === 'all'
+                ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'
+            )}
+            title="Show all works"
+          >
+            <span>All</span>
+            <span
+              className={cn(
+                'text-[10px] px-1.5 py-0.2 rounded-full font-bold',
+                statusFilter === 'all' ? 'bg-white/20 text-white' : 'bg-slate-200/90 text-slate-700'
+              )}
+            >
+              {items.length}
             </span>
           </button>
         </div>
